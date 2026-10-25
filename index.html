@@ -168,7 +168,7 @@ footer.site{position:relative;text-align:center;color:rgba(240,226,196,.88);font
 .devlog{font-size:.82rem;white-space:pre-wrap}
 .turnbanner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5}
 .turnbanner span{font-family:Georgia,serif;font-size:clamp(1.4rem,5vw,2.6rem);font-weight:700;color:#fff8ea;text-shadow:0 2px 12px #000;background:rgba(20,12,2,.45);padding:.2em .8em;border-radius:12px}
-/* ---- Wordless selection: pips, icon cluster, strike affordance ---- */
+/* ---- Wordless selection: health bars, icon cluster, strike affordance ---- */
 #actionLayer{position:absolute;inset:0;pointer-events:none;z-index:60}
 .actcluster{position:absolute;transform:translate(-50%,-185%);display:flex;gap:6px}
 .actstrike{position:absolute;transform:translate(45%,-185%)}
@@ -178,21 +178,32 @@ footer.site{position:relative;text-align:center;color:rgba(240,226,196,.88);font
 .actbtn.strike{width:42px;height:42px;border-color:#ff8a6a;background:rgba(70,18,8,.94)}
 .actbtn.strike svg{stroke:#ffd9d0;width:24px;height:24px}
 .actbtn:active{transform:scale(.93)}
-.piece .hppips{display:flex;gap:1.5%;justify-content:center;margin:1px auto 0;width:94%}
-.piece .hppips i{flex:0 0 8.4%;aspect-ratio:1/1;border-radius:50%;background:rgba(18,12,4,.6);box-shadow:inset 0 0 0 1px rgba(0,0,0,.35)}
-.piece .hppips i.on{background:#7dc24a}
-.piece .hppips.low i.on{background:#e2483a}
+/* Segmented health bar with damage ghost (replaces the HP pips):
+   one slim segment per max HP — driven by maxHp, so a future 20-HP
+   Wren renders finer segments on the same bar. Filled segments take
+   the health color by fraction (green, then amber, then red); empty
+   segments stay dim. In a forecast, the segments the pending hit
+   would remove render as a translucent GHOST on the tail of the
+   filled run — red normally, gold when the surround bonus is
+   boosting the shot — and on a lethal forecast the bar pulses (the
+   doom signal the pips carried). */
+.piece .hpbar{display:flex;gap:1px;justify-content:center;margin:1px auto 0;width:94%;height:4px}
+.piece .hpbar i{flex:1 1 0;min-width:1px;height:100%;border-radius:1px;background:rgba(18,12,4,.55);box-shadow:inset 0 0 0 1px rgba(0,0,0,.3);display:block}
+.piece .hpbar i.on{background:#7dc24a}
+.piece .hpbar.bmid i.on{background:#e8a33c}
+.piece .hpbar.blow i.on{background:#e2483a}
+.piece .hpbar i.ghost{background:rgba(226,72,58,.42);box-shadow:inset 0 0 0 1px rgba(226,72,58,.85)}
+.piece .hpbar i.ghost.gold{background:rgba(240,201,90,.45);box-shadow:inset 0 0 0 1px rgba(240,201,90,.92)}
 .piece .capbar{height:4px;background:rgba(10,6,2,.65);border-radius:2px;margin:1px auto 0;width:78%}
 .piece .capbar>div{height:100%;border-radius:2px;background:var(--gold-bright)}
-.piece .fcpips{display:flex;flex-direction:column;align-items:center;gap:1.5px;margin-bottom:1px}
-.piece .fcpips .rowp{display:flex;gap:1.5px;justify-content:center}
-.piece .fcpips i{width:5.5px;height:5.5px;border-radius:50%;display:block}
-.piece .fcpips i.dmg{background:#e2483a;box-shadow:0 0 3px rgba(0,0,0,.8)}
-.piece .fcpips i.ctr{width:4.5px;height:4.5px;background:rgba(20,10,4,.35);border:1.5px solid #ffd9d0;box-shadow:0 0 2px rgba(0,0,0,.7)}
-.piece .fcpips i.sup{background:#f0c95a;box-shadow:0 0 3px rgba(0,0,0,.8)}
+.piece .fcbars{display:flex;flex-direction:column;gap:1.5px;margin:0 auto 2px;width:100%}
+.piece .fcbars .hpbar{width:100%;margin:0}
+.piece .fcbars .supbar{display:flex;justify-content:center}
+.piece .fcbars .supbar i{width:34%;height:3px;border-radius:1px;background:#f0c95a;box-shadow:0 0 3px rgba(0,0,0,.8);display:block}
 @keyframes doomPulse{0%,100%{opacity:1}50%{opacity:.2}}
-.piece.doomed .hppips i.on{animation:doomPulse .6s ease-in-out infinite;background:#e2483a}
-@media (prefers-reduced-motion: reduce){.piece.doomed .hppips i.on{animation:none;background:#e2483a}}
+.piece.doomed .hpbar i.ghost{animation:doomPulse .6s ease-in-out infinite}
+.piece.doomed>.hpbar i.on{animation:doomPulse .6s ease-in-out infinite;background:#e2483a}
+@media (prefers-reduced-motion: reduce){.piece.doomed .hpbar i.ghost,.piece.doomed>.hpbar i.on{animation:none}}
 .piece.deployed::after{content:'';display:block;width:70%;height:5px;margin:0 auto;border-radius:50%;background:rgba(15,9,2,.55);box-shadow:0 0 4px rgba(0,0,0,.5)}
 /* ---- Towers: manned lights, dormant dim (owner hex outline in #ownerSvg) ---- */
 .piece.towerp img{filter:drop-shadow(0 4px 4px rgba(20,12,2,.5))}
@@ -314,8 +325,8 @@ footer.site{color:rgba(210,235,245,.88)}
 @keyframes fxknockAnim{25%{transform:translate(calc(-50% + var(--kx,3px)),calc(-50% + var(--ky,0px)))}100%{transform:translate(-50%,-50%)}}
 .piece.fx-hit img{animation:fxhitflashAnim .3s ease-out}
 @keyframes fxhitflashAnim{0%{filter:brightness(2.6) saturate(.35)}45%{filter:brightness(1.65) sepia(.55) hue-rotate(-38deg) saturate(2.1)}100%{filter:brightness(1)}}
-.piece.fx-hit .hppips{animation:fxpipsAnim .34s ease-out}
-@keyframes fxpipsAnim{0%{filter:brightness(2.2) hue-rotate(-50deg)}100%{filter:none}}
+.piece.fx-hit .hpbar{animation:fxbarAnim .34s ease-out}
+@keyframes fxbarAnim{0%{filter:brightness(2.2) hue-rotate(-50deg)}100%{filter:none}}
 .piece.fx-recoil{animation:fxrecoilAnim .22s ease-out}
 @keyframes fxrecoilAnim{30%{transform:translate(calc(-50% + var(--rx,0px)),calc(-50% + var(--ry,0px)))}100%{transform:translate(-50%,-50%)}}
 #board.shaking{animation:boardshakeAnim var(--shdur,.2s) linear}
@@ -437,12 +448,12 @@ footer.site{color:rgba(210,235,245,.88)}
   <div class="sheet">
     <h2>How to play</h2>
     <p class="sub">One Terra skirmish against the CPU, on the miniature table.</p>
-    <p><b>Turn:</b> tap one of your blue miniatures, tap a softly lit hex to move, then tap a red enemy in range: the filled red pips above it preview the HP it would lose, and the smaller hollow pips the counterattack it would deal back. Tap it again, or tap the crosshair beside it, to strike. Indirect units (Artillery, Rockets, deployed Siege) may move and fire in the same turn. The Siege must deploy in place before it can fire its long-range splash shot, and cannot move while deployed.</p>
+    <p><b>Turn:</b> tap one of your blue miniatures, tap a softly lit hex to move, then tap a red enemy in range: the segmented health bar above it previews the hit — the segments the shot would remove glow as a red ghost on the tail of its bar, and a second bar beneath shows the counterattack it would deal back the same way. Tap it again, or tap the crosshair beside it, to strike. Indirect units (Artillery, Rockets, deployed Siege) may move and fire in the same turn. The Siege must deploy in place before it can fire its long-range splash shot, and cannot move while deployed.</p>
     <p><b>Capture:</b> park Infantry, Mech or Wren herself on a property and choose Capture. Capturing takes two turns, faster inside Wren's aura. Towns, factories and the relay pay income each turn; factories build new units. Capturing the enemy HQ wins at once.</p>
     <p><b>Win three ways:</b> capture the enemy HQ, rout every enemy unit, or capture the central relay and hold it for 3 of your turns.</p>
-    <p><b>Surround:</b> each of your units standing beside the target beyond the first adds about +10% damage and blunts the counterattack. When a strike is armed, each supporting unit shows a gold pip and the target's outline deepens; a target whose pips pulse is about to be destroyed.</p>
+    <p><b>Surround:</b> each of your units standing beside the target beyond the first adds about +10% damage and blunts the counterattack. When a strike is armed, each supporting unit shows a gold marker, the target's outline deepens, and the damage ghost on the target's bar turns gold while the surround bonus is boosting the shot; a target whose whole bar pulses is about to be destroyed.</p>
     <p><b>Fog:</b> unexplored table lies in shadow, and sight on this table is short: most units see only 2 hexes, medium tanks and battle copters 3, and the recon — the army's dedicated eyes — 4. Explored ground stays dim and shows no units. Forest hides a unit unless an enemy stands next to it; hills and forests block sight lines. Finding the enemy before it finds you is the game: push recons and drones forward, and expect the red column to be doing the same with its recons. Wren's drones are the exception: whatever a drone can reach with its sensors is fully revealed, forest or no forest.</p>
-    <p><b>Commander Wren:</b> only the blue army fields a commander. Wren is enhanced infantry on foot: she crosses forest, hills and rough ground at foot cost, takes infantry cover and forest hiding, is targeted as infantry rather than as a vehicle, can capture, and keeps commander-grade strength. Her aura reaches 2 hexes: foot units inside it capture faster, and infantry holding forest or a property inside it gains extra cover. If she is downed, she returns at her HQ after 3 turns at reduced strength, and while she is down no new drones can launch. The red column has no commander, no aura and no drones — it compensates with extra funds and an extra recon.</p>
+    <p><b>Commander Wren:</b> only the blue army fields a commander. Wren is enhanced infantry on foot: she crosses forest, hills and rough ground at foot cost, takes infantry cover and forest hiding, is targeted as infantry rather than as a vehicle, can capture, and carries commander-grade firepower — she out-guns infantry and mechs outright and edges a tank against soft targets, though heavy armor still out-shoots her. Her aura reaches 2 hexes: foot units inside it capture faster, and infantry holding forest or a property inside it gains extra cover. If she is downed, she returns at her HQ after 3 turns at full strength, and while she is down no new drones can launch. She is built to grow with the campaign to come: each completed level will raise her maximum health by 2, up to 20 — in this battle she fights at 10, like everyone else. The red column has no commander, no aura and no drones — it compensates with extra funds and an extra recon.</p>
     <p><b>Drones:</b> tap Wren and choose the drone icon to launch a scout drone; launching is her action for the turn. She may keep at most two drones aloft. A drone flies 6 hexes over any ground, cannot attack, and cannot end its move on an occupied hex. Its sensors fully reveal everything within 3 hexes, including units hidden in forest, which makes it the best way to learn a new table. It is fragile: a single hit from anything that can target air brings it down, and anti-air guns are its natural counter. For now her drones only scout. As Wren gains levels in later battles, her drones will branch by your preference into offensive, defensive, repair and capture models.</p>
     <p><b>Towers:</b> Infantry, Mech and Wren can raise a tower for 1500 funds on plains, forest, hills or road. The builder becomes the tower's garrison and leaves the board as a separate piece: the army trades a unit for reach. A manned tower sees 3 hexes and can fire once a turn at range 2 with a mech-class shot, and enemies that strike it may be answered in kind. The garrison is safe while the tower stands; if the tower is destroyed, the garrison reappears on the hex at half strength, exhausted. Tap your tower and choose the leave icon to unman it: the garrison steps out whole and rested next turn, but an unmanned tower goes dormant, seeing only its own hex and unable to fire, until a friendly foot unit steps in and mans it again. An enemy foot unit standing on your tower captures it over two turns, just like a property; when the capture completes, the tower changes hands and any garrison inside is thrown out at half strength. Towers cannot be automated yet; that upgrade arrives with later battles.</p>
     <p><b>The Ruin:</b> the Old Ruin at the table's heart is more than scenery. Its ancient amber turret is alive: while the ruin is neutral it fires on anyone from either army who lingers in range 2–3. Infantry, Mech and Wren can capture the ruin like a property over two turns — stand on its hex beside the turret and choose Capture. Whoever holds the ruin gains +250 income a turn, and the turret changes allegiance with it, turning its guns on the holder's enemies. It can be re-captured the same way, and the turret flips with it. Its kills are credited to whoever holds it.</p>
@@ -468,6 +479,7 @@ footer.site{color:rgba(210,235,245,.88)}
    diorama sheets (board plate + blue/red miniature sheets + property
    sheet). Nothing on the table is drawn or vector-substituted. */
 var DEVLOG = [
+ 'Commander buff + segmented health bars with damage ghosts — four approved parts in one pass. (1) WREN DAMAGE BUFF: the cmd row\u2019s damage alone moves from 70/55/45/0 to 80/65/55/0 (infantry/vehicles/tanks/air). She now out-guns the Mech (65/45/40) and Infantry (55/15/8) in every column and edges the Tank against infantry and vehicles (80 to 75, 65 to 60) while still trailing it against armor (55 to 65) — a commander who bullies soft targets but should not duel heavy armor head-on. Nothing else about her changes: move 5 on foot, range 1\u20131, vision 2, infantry category and cover, capture and tower-building, the 2-hex aura and drone launches (cap 2) are all untouched, as is every other unit\u2019s stat line; red still fields no commander and keeps its 1450 funds and extra Recon. (2) FULL-STRENGTH RETURN: her downed flow is unchanged — off the table for 3 of her owner\u2019s turns, back at her HQ, exhausted that turn — except she now returns at FULL current max HP instead of the old battered 5 HP, and the battle log and How to Play say so. (3) MAX-HP PLUMBING for campaign growth: every unit now carries a per-unit maxHp (10 by default, 1 for the drone), and Wren\u2019s is a commander stat starting at 10 (CMD_MAX_HP). Combat damage scaling normalizes by the attacker\u2019s own maxHp — damage scales with the fraction of health remaining — which is byte-for-byte the old behavior at maxHp 10 for the whole current roster and makes her growth work the moment it switches on. maxHp is stored in the save in a backward-compatible way: saves written before it existed omit it, loadGame fills the type default in, the save key and version (v4) are unchanged and an in-progress battle loads intact. The growth rule itself is recorded here and in How to Play as future campaign design — +2 max HP per completed level, capped at 20 — but no campaign progression is built in this pass; she starts and stays at 10 in this battle. (4) SEGMENTED HEALTH BAR WITH DAMAGE GHOST replaces the HP pips everywhere health was shown with them (the forecast display and the standing unit/tower readouts on the board): one slim segment per max HP, driven by maxHp so a future 20-HP Wren renders finer segments on the same bar; filled segments take a health color that shifts green to amber to red as the fraction drops, empty segments stay dim. In the forecast, the segments the pending hit would remove show as a translucent red GHOST on the tail of the defender\u2019s bar, and the counterattack shows the same way on the attacker\u2019s bar beneath it; when the hit would kill, the ghost takes the pulsing doom signal the pips carried; when the graduated surround bonus is boosting the damage, the ghost renders in gold, preserving the gold surround signal (supporting units still show their gold marker and the target outline still deepens). Every number the pips carried carries over exactly — damage dealt, counterattack taken, kill confirmation, surround bonus — because the bars are built from the same forecast values. Numeric HP text in panels is unchanged, the board stays wordless, and nothing else in the UI moves. Preserved: the byte-exact footer, guarded ambient audio, fog rules, travel animation and sounds, explosion deaths, the jump-to-ready-unit control, kill counts and veterancy, and every gameplay number outside the cmd damage row.',
  'Explosion polish — deaths now read as ONE soft cloud, closer to the StarCraft reference (Ashfall). The fireball is no longer a crisp radial disc: it is a composite of a main blob plus two offset lobes, each with irregular feathered edges (layered offset radial gradients, blurred rims, a blurred white-hot core layer and a dissolving outer rim layer, per-instance random rotation). Its life cycle blooms fast (full size in roughly the first 160ms), then cools and collapses — the bright core layer shrinks away, the whole blob contracts slightly, darkens toward deep red and blurs out at the rim instead of shrinking as a uniform disc; no shockwave ring was added. Smoke is now the longest-lived element and the visual anchor: six overlapping soft grey-brown puffs per vehicle fireball (three for the mech), each larger and softer than before (multi-layer gradients, heavy blur, irregular silhouette), begins as the fire cools, rising well above the hex, expanding to roughly twice size and drifting sideways on varied paths, still hanging over the hex after everything else is gone. Sharp spark confetti is gone: at most three soft, blurred ember motes drift up and fade with the fire (the pale-blue power-down motes for Wren and the drone are the same soft shape, also three). The ground glow is wider, flatter and blurred so the light sits baked into the hex under the burst. Scorch and blood-splat decals are softened the same way — layered offset blotches, satellite smears, blurred feathered edges and a per-instance random rotation and irregular outline — with their fade timings unchanged. Everything else is exactly as established: per-class treatments and size scaling (Siege widest, then Tank, then Recon, Mech below Tank), the copter burning fall into its impact fireball, infantry and Wren splat drops, the drone pop, tower and ruin-turret fireball into crumble, kill sounds, damage shake and hit-stop, the input-lock envelope (main beat still under about 900ms; smoke and decals linger passively), fog, save format, the wordless board, the footer, and reduced-motion (brief static soft flash plus decal, no fall, spin, smoke or embers). No topple anywhere.',
  'Jump to ready units from the end-turn warning. Tapping End Turn while blue units can still act now also raises a companion control beside End Turn in the top-right HUD: a crosshair icon with the count of units that can still act (the number lives in the HUD chrome; the board itself stays wordless). Tapping it jumps to the next ready unit — the camera pans smoothly (about 300ms, through the usual clamped animateViewTo) to centre the unit in the map area, and the unit is selected exactly as if tapped (standard select sound, move range and action cluster available), so it can be ordered immediately; repeated taps cycle through every ready unit in the game\u2019s unit order and wrap back to the first after the last. One shared predicate (readyUnits: blue, not acted, not downed — a unit that has only moved counts, exactly as the warning always counted it) drives the warning, the count on the button and the jump cycle, so the three can never disagree. Jumping cancels the armed end-turn confirmation, clearing its timer and returning the button to plain End Turn, so ending the turn afterwards re-evaluates fresh and warns again if units remain; the jump control stays up while ready units remain on the player\u2019s turn so cycling can continue, its count refreshing on every render, and it disappears the moment no unit can act, the turn ends, or the battle does. Tapping End Turn a second time while the warning is armed still ends the turn immediately, exactly as before; with no units able to act there is no warning and no jump control. Fog and selection rules are untouched — these are the player\u2019s own units. No gameplay numbers, save format or footer changes. One pre-existing travel-animation bug the verification harness exposed is fixed in passing: a requestAnimationFrame timestamp can precede the travel\u2019s start time by a frame, which made the first-frame interpolation index negative and threw, soft-locking a CPU turn; elapsed time in the travel frame is now clamped at zero.',
  'Explosion deaths — the topple is gone. No unit rotates or falls over sideways as its death anymore, on any death path (direct kills, counterattacks, siege splash, tower and ruin-turret kills). Deaths now speak the reference game\'s explosion language, scaled to a one-kill-at-a-time table: ground vehicles die in a round fireball — bright yellow-white core, orange edge — with debris sparks thrown outward, the miniature consumed by the burst (white-hot flash and fade inside it), a warm glow lighting its hex during the flash, a grey-brown smoke plume that rises and drifts for two to three seconds, and a dark scorch mark left on the hex fading over the following seconds. Size scales with the machine: Siege and Medium Tank biggest, Tank, Artillery and Rockets mid, Anti-Air smaller, Recon and APC smallest. The Battle Copter dies in the air: it drops from flight height trailing smoke with a slight spin and fireballs on impact, then plume and scorch as above. The Mech gets a mid-size spark-and-flame burst and leaves a splat-and-scorch mark. Infantry and Commander Wren get no fireball: they drop fast where they stand under a spreading dark red splat decal with a small dust puff; Wren adds a short electric spark burst as her suit powers down, and her downed-and-return flow is unchanged. The scout drone pops electrically and falls, no fireball, no splat. Towers and the ruin turret now open their existing crumble with a fireball burst and smoke; a killed turret leaves the ruin scorched. Sound gains a dedicated layered kill explosion on the same SFX bus and compressor — a low boom plus a crackle-and-debris tail, scaled by class (vehicles and structures biggest, Mech mid, the copter adds a falling whistle into its impact boom, infantry a quiet dull thud, Wren a thud with power-down sparks, the drone a small electric zap-pop), CPU kills at the usual reduced volume. Damage-scaled shake, hit-stop, damage numbers and pips, kill counts and credits, fog (hidden deaths stay hidden exactly as combat FX handled them), the save format, travel and the wordless board are all untouched; smoke and decals linger passively after input returns, inside the same combat FX envelope as before. Reduced motion: no fall, spin or shake — a brief static flash plus the splat/scorch decal, kill sound unchanged.',
@@ -513,7 +525,7 @@ var TYPES = {
  rockets: {name:'Rockets',  spr:'rockets',  cost:800, mv:5, mt:'wheels', rmin:3, rmax:4, vis:2, cat:'VEH', cap:false, dmg:{INF:85,VEH:70,TNK:65,AIR:0},  w:6.20, wr:6.20, indirect:true},
  copter:  {name:'Battle Copter',spr:'copter',cost:700,mv:6, mt:'air',   rmin:1, rmax:1, vis:3, cat:'AIR', cap:false, dmg:{INF:60,VEH:55,TNK:45,AIR:35}, w:6.30, wr:6.30},
  siege:   {name:'Siege',    spr:'siege',    cost:850, mv:4, mt:'treads', rmin:3, rmax:5, vis:2, cat:'VEH', cap:false, dmg:{INF:90,VEH:85,TNK:80,AIR:0},  w:6.90, wr:6.90, siege:true},
- cmd:     {name:'Commander Wren',spr:'cmd-wren',cost:0, mv:5, mt:'foot', rmin:1, rmax:1, vis:2, cat:'INF', cap:true, build:true, dmg:{INF:70,VEH:55,TNK:45,AIR:0}, w:5.30},
+ cmd:     {name:'Commander Wren',spr:'cmd-wren',cost:0, mv:5, mt:'foot', rmin:1, rmax:1, vis:2, cat:'INF', cap:true, build:true, dmg:{INF:80,VEH:65,TNK:55,AIR:0}, w:5.30},
  drone:   {name:'Scout Drone',spr:'drone',  cost:0,   mv:6, mt:'air',   rmin:0, rmax:0, vis:3, cat:'AIR', cap:false, dmg:{INF:0, VEH:0, TNK:0, AIR:0},  w:3.40, wr:3.40, drone:true},
  tower:   {name:'Tower',    spr:'tower',    cost:1500,mv:0, mt:'fixed', rmin:1, rmax:2, vis:3, cat:'VEH', cap:false, dmg:{INF:65,VEH:45,TNK:40,AIR:0},  w:7.00},
  turret:  {name:'Ruin Turret',spr:'turret', cost:0,   mv:0, mt:'fixed',  rmin:2, rmax:3, vis:3, cat:'VEH', cap:false, dmg:{INF:70,VEH:55,TNK:45,AIR:80}, w:5.28}
@@ -523,6 +535,15 @@ var TYPES = {
    commander at all — no crimson Wren exists anywhere in this build. */
 function effType(u){ return TYPES[u.type]; }
 var WREN = { name:'Commander Wren', title:'Drone Commander', img:'blue-cmd-wren.png' };
+/* Per-unit max HP: 10 for every type, 1 for the drone. Wren's maxHp
+   is a commander stat (CMD_MAX_HP): she starts at 10, and the future
+   campaign will raise it by +2 per completed level up to a cap of 20.
+   Combat damage scaling normalizes by the attacker's own maxHp, so
+   the growth works the moment the campaign layer switches it on.
+   Saves written before maxHp existed simply omit it — maxHpOf and
+   the loadGame normalization treat a missing value as the default. */
+var CMD_MAX_HP = 10;
+function maxHpOf(u){ if (u && u.maxHp) return u.maxHp; if (u && u.type === 'drone') return 1; if (u && u.type === 'cmd') return CMD_MAX_HP; return 10; }
 var DRONE_CAP = 2, TOWER_COST = 1500;
 var PROPS = {
  hq:     {name:'Headquarters', spr:'prop-hq',     w:7.00, def:4, income:150},
@@ -646,7 +667,7 @@ var SAVE_KEY = 'xenofront-diorama-save-v4';
 var G = null;
 var uidSeq = 1;
 function mkUnit(type, side, c, r){
-  return { id: uidSeq++, type: type, side: side, c: c, r: r, hp: 10, xp: 0, kills: 0,
+  return { id: uidSeq++, type: type, side: side, c: c, r: r, hp: 10, maxHp: type === 'drone' ? 1 : (type === 'cmd' ? CMD_MAX_HP : 10), xp: 0, kills: 0,
            acted: false, moved: false, deployed: false, carrying: 0, downed: false, garr: false };
 }
 function mkTower(side, c, r, garrisonUnit){
@@ -933,7 +954,7 @@ function surroundCount(att, def){
 function forecast(att, def, noLuck){
   var t = effType(att), base = t.dmg[defCat(def)];
   var sur = surroundCount(att, def);
-  var mult = (att.hp / 10) * (1 + 0.10 * sur + 0.10 * rankOf(att) + auraBonusDmg(att));
+  var mult = (att.hp / maxHpOf(att)) * (1 + 0.10 * sur + 0.10 * rankOf(att) + auraBonusDmg(att));
   var defStars = defStarsAt(def.c, def.r, def);
   if (!def.tower && def.side !== 'N' && inAura(def) && (terrainMap[key(def.c, def.r)] === 'forest' || PROP_AT[key(def.c, def.r)])) defStars += 1;
   mult *= (1 - defStars * 0.10);
@@ -946,7 +967,7 @@ function forecast(att, def, noLuck){
     var d = hexDist([att.c, att.r], [def.c, def.r]), drg = effRange(def);
     if (d >= drg.min && d <= drg.max && dt.dmg[defCat(att)] > 0 && !dt.indirect && !effType(att).siege){
       var defHpAfter = Math.max(0, def.hp - hi);
-      var cmult = (defHpAfter / 10) * (1 + 0.10 * rankOf(def) + auraBonusDmg(def)) * (1 - defStarsAt(att.c, att.r, att) * 0.10) * (1 - 0.10 * sur);
+      var cmult = (defHpAfter / maxHpOf(def)) * (1 + 0.10 * rankOf(def) + auraBonusDmg(def)) * (1 - defStarsAt(att.c, att.r, att) * 0.10) * (1 - 0.10 * sur);
       counter = Math.max(1, Math.round(dt.dmg[defCat(att)] * cmult / 10));
       if (defHpAfter <= 0) counter = 0;
     }
@@ -1008,7 +1029,7 @@ function sideName(s){ return s === 'P' ? 'Blue' : s === 'E' ? 'Red' : 'Neutral';
    a destroyed unit leaves the board); render() calls flushFx() at
    its end, which plays them against the freshly rendered pieces:
    attacker recoil + muzzle flash + a tracer streak, an impact burst
-   scaled by damage, knockback/flash/pip-pulse on a survivor, and on
+   scaled by damage, knockback/flash/bar-pulse on a survivor, and on
    a kill the explosion-death treatment for the victim's class (see
    spawnDeathFx: fireball, glow, smoke, sparks and scorch for
    vehicles and structures; a falling, fireballing copter; a spark
@@ -1379,21 +1400,46 @@ function incomeOf(side){
   for (var k in G.props) if (G.props[k].owner === side) sum += PROPS[G.props[k].kind].income;
   return sum;
 }
-/* The attacker whose forecast pips should currently show: the selected
+/* The attacker whose forecast bars should currently show: the selected
    unit that can still act, or the selected manned tower that can still
-   fire. Wordless — pips only. */
+   fire. Wordless — bars only. */
 function currentAttacker(){
   if (selTower && selTower.garrison && !selTower.fired) return selTower;
   if (selUnit && !selUnit.acted) return selUnit;
   return null;
 }
-function fcPipsHtml(att, def){
+/* Segmented health bar for one unit: one segment per max HP (maxHpOf,
+   so Wren's future 20 renders finer segments on the same bar).
+   ghost = how many of the filled tail segments a pending hit would
+   remove, drawn as a translucent ghost — gold when the surround
+   bonus is boosting the shot. Filled segments take the health color
+   by remaining fraction: green, then amber, then red. */
+function hpBarHtml(u, ghost, gold){
+  var total = maxHpOf(u), hp = Math.max(0, Math.min(u.hp, total));
+  var g = Math.max(0, Math.min(ghost || 0, hp));
+  var frac = total > 0 ? hp / total : 0;
+  var band = frac > 0.5 ? '' : (frac > 0.3 ? ' bmid' : ' blow');
+  var s = '';
+  for (var i = 0; i < total; i++){
+    if (i < hp - g) s += '<i class="on"></i>';
+    else if (i < hp) s += '<i class="ghost' + (gold ? ' gold' : '') + '"></i>';
+    else s += '<i class="off"></i>';
+  }
+  return '<div class="hpbar' + band + '">' + s + '</div>';
+}
+/* Wordless forecast, rendered on the target itself: the defender's
+   bar with the pending damage as a ghost on its tail (gold when the
+   graduated surround bonus is boosting the shot), and — when a
+   counterattack would land — the attacker's own bar beneath it with
+   the counter damage as its ghost. A lethal forecast marks the
+   target doomed: its ghost segments pulse. Same numbers the pips
+   carried: damage dealt, counterattack taken, kill confirmation,
+   surround bonus. */
+function fcBarHtml(att, def){
   var fc0 = forecast(att, def);
   var dp = Math.min(def.hp, Math.round((fc0.dmgLo + fc0.dmgHi) / 2));
-  var dmgRow = '', ctrRow = '', cp = Math.min(att.hp, fc0.counter);
-  for (var d1 = 0; d1 < dp; d1++) dmgRow += '<i class="dmg"></i>';
-  for (var d2 = 0; d2 < cp; d2++) ctrRow += '<i class="ctr"></i>';
-  return { html: '<div class="fcpips"><div class="rowp">' + dmgRow + '</div>' + (ctrRow ? '<div class="rowp">' + ctrRow + '</div>' : '') + '</div>', doomed: dp >= def.hp };
+  var cp = Math.min(att.hp, fc0.counter);
+  return { html: '<div class="fcbars">' + hpBarHtml(def, dp, fc0.surround > 0) + (cp > 0 ? hpBarHtml(att, cp, false) : '') + '</div>', doomed: dp >= def.hp };
 }
 /* Subtle hexagonal owner outline for one territory hex, in board
    coordinates: same center and pointy-top orientation as the board's
@@ -1454,16 +1500,14 @@ function renderProps(){
     if (!G.explored[tk] && tw.side !== 'P') continue;
     var manned = !!tw.garrison;
     var tfc = '', tdoom = false;
-    if (att2 && tw.side !== att2.side && canTarget(att2, tw)){ var fp2 = fcPipsHtml(att2, tw); tfc = fp2.html; tdoom = fp2.doomed; }
-    var thp = '';
-    for (var th = 0; th < 10; th++) thp += '<i class="' + (th < tw.hp ? 'on' : 'off') + '"></i>';
+    if (att2 && tw.side !== att2.side && canTarget(att2, tw)){ var fp2 = fcBarHtml(att2, tw); tfc = fp2.html; tdoom = fp2.doomed; }
     var tcap = tw.capUnit ? '<div class="capbar"><div style="width:' + Math.min(100, tw.capPts / 20 * 100) + '%"></div></div>' : '';
     ownerHtml += ownerHexPoly(tw.c, tw.r, tw.side, manned ? 1.18 : 0.5);
     html += '<div class="piece towerp ' + (manned ? 'manned' : 'dormant') + (tw.side === 'E' ? ' eside' : '') + (tdoom ? ' doomed' : '') + '" data-uid="' + tw.id + '" style="left:' + (hexCX(tw.c, tw.r) / BW * 100) + '%;top:' + (hexCY(tw.r) / BH * 100) + '%;width:' + TYPES.tower.w + '%;z-index:' + (18 + tw.r) + (visNow[tk] ? '' : ';opacity:.82') + '">' +
       '<span class="aosh"></span>' +
       tfc +
       '<img src="' + SPRITES['tower' + (tw.side === 'E' ? '-e' : '') + '.png'] + '" alt="Tower (' + sideName(tw.side) + (manned ? ', manned' : ', dormant') + ')" style="width:100%">' +
-      '<div class="hppips' + (tw.hp <= 3 ? ' low' : '') + '">' + thp + '</div>' + tcap + '</div>';
+      hpBarHtml(tw, 0, false) + tcap + '</div>';
   }
   propLayer.innerHTML = html;
   if (ownerSvg) ownerSvg.innerHTML = ownerHtml;
@@ -1545,15 +1589,13 @@ function renderUnits(){
     var cap = '';
     var pk = key(u.c, u.r);
     if (G.props[pk] && G.props[pk].capUnit === u.id) cap = '<div class="capbar"><div style="width:' + Math.min(100, G.props[pk].capPts / 20 * 100) + '%"></div></div>';
-    /* Wordless forecast: pips on the target itself, nothing written. */
+    /* Wordless forecast: bars on the target itself, nothing written. */
     var fcHtml = '', doomed = false;
     if (curAtt && G.side === 'P' && u.side === 'E' && canTarget(curAtt, u)){
-      var fp = fcPipsHtml(curAtt, u); fcHtml = fp.html; doomed = fp.doomed;
+      var fp = fcBarHtml(curAtt, u); fcHtml = fp.html; doomed = fp.doomed;
     } else if (pendingForecast && u.side === 'P' && selUnit && u.id !== selUnit.id && hexDist([u.c, u.r], [pendingForecast.def.c, pendingForecast.def.r]) === 1){
-      fcHtml = '<div class="fcpips"><div class="rowp"><i class="sup"></i></div></div>';
+      fcHtml = '<div class="fcbars"><div class="supbar"><i></i></div></div>';
     }
-    var hpPips = '', maxP = u.type === 'drone' ? 1 : 10;
-    for (var hp = 0; hp < maxP; hp++) hpPips += '<i class="' + (hp < u.hp ? 'on' : 'off') + '"></i>';
     /* The ruin turret's lights take its owner's accent: amber while
        the ruin is neutral, cyan for blue, warm for red. */
     var turGlow = '';
@@ -1565,7 +1607,7 @@ function renderUnits(){
       fcHtml +
       '<span class="aosh"></span>' +
       '<img src="' + spriteFor(u) + '" alt="' + t.name + ' (' + sideName(u.side) + ')"' + (turGlow || ' style="width:100%"') + '>' +
-      '<div class="hppips' + (u.hp <= 3 ? ' low' : '') + '">' + hpPips + '</div>' +
+      hpBarHtml(u, 0, false) +
       (badges ? '<div class="badges">' + badges + '</div>' : '') + cap + '</div>';
   }
   unitLayer.innerHTML = html;
@@ -1784,7 +1826,7 @@ function unitAction(act){
     var tw0 = selTower; if (!tw0 || !tw0.garrison) return;
     var gu = unitById(tw0.garrison); if (!gu) return;
     if (unitAt(tw0.c, tw0.r)){ say('Another unit stands on the tower hex; the garrison cannot step out yet.'); return; }
-    gu.c = tw0.c; gu.r = tw0.r; gu.garr = false; gu.hp = 10; gu.acted = true; gu.moved = true;
+    gu.c = tw0.c; gu.r = tw0.r; gu.garr = false; gu.hp = maxHpOf(gu); gu.acted = true; gu.moved = true;
     tw0.garrison = 0; tw0.garHp = 0;
     log('The garrison steps out at full strength; the tower goes dormant.');
     sfx('select');
@@ -1880,7 +1922,7 @@ function dmgProfileText(t){
 }
 function unitReadoutHtml(u, c, r){
   var t = effType(u), pk = key(c, r);
-  var maxHp = u.type === 'drone' ? 1 : 10;
+  var maxHp = maxHpOf(u);
   var rg = effRange(u);
   var rangeTxt = t.rmax === 0 ? 'no weapon' : (rg.min === rg.max ? 'range ' + rg.max : 'range ' + rg.min + '–' + rg.max);
   var stars = rankOf(u) > 0 ? ' · Rank ' + '★'.repeat(rankOf(u)) + ' (' + u.xp + ' XP)' : ' · ' + u.xp + ' XP';
@@ -2154,7 +2196,7 @@ function beginSideTurn(side){
       var spot = null;
       if (!unitAt(+hp[0], +hp[1])) spot = [+hp[0], +hp[1]];
       else { var ns = neighbors(+hp[0], +hp[1]); for (var j = 0; j < ns.length; j++) if (!unitAt(ns[j][0], ns[j][1])) { spot = ns[j]; break; } }
-      if (cm && spot){ cm.downed = false; cm.c = spot[0]; cm.r = spot[1]; cm.hp = 5; cm.acted = true; cm.moved = true; log(WREN.name + ' (' + sideName(side) + ') returns to the table at the HQ, still battered.'); }
+      if (cm && spot){ cm.downed = false; cm.c = spot[0]; cm.r = spot[1]; cm.hp = maxHpOf(cm); cm.acted = true; cm.moved = true; log(WREN.name + ' (' + sideName(side) + ') returns to the table at the HQ at full strength.'); }
     }
   }
   // capture progress breaks if the capturing unit left or died
@@ -2486,7 +2528,13 @@ function loadGame(){
     if (!G.exploredE) G.exploredE = {};
     if (!G.towerKills) G.towerKills = { P: 0, E: 0 };
     for (var ti = 0; ti < G.towers.length; ti++) uidSeq = Math.max(uidSeq, G.towers[ti].id + 1);
-    for (var ui = 0; ui < G.units.length; ui++) if (G.units[ui].garr === undefined) G.units[ui].garr = false;
+    for (var ui = 0; ui < G.units.length; ui++){
+      if (G.units[ui].garr === undefined) G.units[ui].garr = false;
+      /* maxHp arrived after save v4 shipped: a missing value means
+         the type default (10, or 1 for a drone) — the in-progress
+         battle loads intact, same key, same version. */
+      if (G.units[ui].maxHp === undefined) G.units[ui].maxHp = G.units[ui].type === 'drone' ? 1 : (G.units[ui].type === 'cmd' ? CMD_MAX_HP : 10);
+    }
     if (G.side !== 'P'){ G.side = 'P'; for (var j = 0; j < G.units.length; j++) if (G.units[j].side === 'P'){ G.units[j].acted = false; G.units[j].moved = false; } }
     computeFog();
     document.getElementById('cmdOverlay').classList.add('hidden');
