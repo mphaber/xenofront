@@ -28,16 +28,19 @@ button.primary{background:var(--gold);border-color:var(--gold);color:#fff8ea;fon
 button.danger{background:var(--bad);border-color:var(--bad);color:#fff}
 h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0}
 /* ---- Full-screen app shell: the page itself never scrolls ---- */
-/* ---- Full-bleed shell: the board IS the screen (100dvw x 100dvh,
-   edge to edge, base layer). No layout row reserves space for chrome:
-   HUD chips, the readout card and the footer all float over the map
-   as overlays. Inside the board, .world holds the plate and every
-   board layer at the game's native 3:2 and is scaled with a UNIFORM
-   cover scale only — hexes are never stretched non-uniformly — and
-   pans inside the full-screen frame (see layoutWorld/pan in the
-   script). ---- */
-.wrap{position:fixed;inset:0;width:100vw;width:100dvw;height:100vh;height:100dvh;overflow:hidden;background:#241708}
-.board{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:#3d4a26;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+/* ---- Stacked shell: the screen is a column. The board (map
+   viewport) takes every pixel above the permanent bottom stack;
+   the status bar and the copyright footer live in that stack in
+   normal layout flow, so no part of the map can ever render
+   underneath them. Only the HUD chips still float, over the map's
+   top edge. Inside the board, .world holds the plate and every
+   board layer at the game's native 3:2 and is scaled with a
+   UNIFORM cover scale only — hexes are never stretched
+   non-uniformly — and pans inside the map viewport, whose size is
+   always the board element's own size (see layoutWorld/pan in
+   the script). ---- */
+.wrap{position:fixed;inset:0;width:100vw;width:100dvw;height:100vh;height:100dvh;overflow:hidden;background:#241708;display:flex;flex-direction:column}
+.board{position:relative;flex:1 1 auto;min-height:0;width:100%;overflow:hidden;background:#3d4a26;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
 .board:active{cursor:grabbing}
 .world{position:absolute;left:0;top:0;width:max(100vw,150dvh);aspect-ratio:3/2;will-change:transform}
 .hud{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px));display:flex;align-items:flex-start;gap:8px;z-index:45;pointer-events:none}
@@ -96,14 +99,15 @@ h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0}
 .piece.towerp .aosh{width:120%;height:30%}
 .prop img{position:relative;z-index:1}
 .piece.towerp img{position:relative;z-index:1}
-/* Inspection readout: a floating card anchored to the bottom of the
-   screen, over the full-bleed map. It never shrinks the board; it
-   appears when a hex is inspected and dismisses via its close button,
-   returning the full map. */
-.readoutwrap{position:absolute;left:calc(10px + env(safe-area-inset-left,0px));right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--panel);background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);max-height:36dvh;display:flex;flex-direction:column}
-.readoutwrap.ro-hidden{display:none}
-#readoutClose{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;padding:0;line-height:1;font-size:.85rem;background:var(--panel2);z-index:2}
-.readout{padding:8px 34px 9px 12px;font-size:.9rem;display:flex;gap:14px;align-items:flex-start;overflow-y:auto;min-height:0}
+/* Status bar: a PERMANENT strip in normal layout flow at the
+   bottom of the screen, inside #bottomStack under the map. It is
+   always present, sized to its content; its terrain/unit readout
+   simply updates as hexes are inspected. It has no dismiss and no
+   collapse — the map viewport ends exactly at its top edge, so it
+   can never cover the table. */
+.bottomstack{flex:0 0 auto;display:flex;flex-direction:column;background:rgba(18,26,36,.98);padding-bottom:env(safe-area-inset-bottom,0px)}
+.readoutwrap{position:relative;z-index:40;background:var(--panel);background:color-mix(in srgb,var(--panel) 94%,transparent);border-top:1px solid var(--line);box-shadow:var(--shadow);max-height:34dvh;display:flex;flex-direction:column}
+.readout{padding:8px 12px 9px 12px;font-size:.9rem;display:flex;gap:14px;align-items:flex-start;overflow-y:auto;min-height:0}
 .readout .tname{font-family:Georgia,serif;font-weight:700}
 .readout .ro-terrain{flex:1 1 0;min-width:0}
 .readout .ro-unit{flex:1.35 1 0;min-width:0;border-left:1px solid var(--line);padding-left:14px}
@@ -156,7 +160,7 @@ table.kills td,table.kills th{padding:3px 6px;text-align:left;border-bottom:1px 
 .forecast .pips{color:var(--gold);letter-spacing:.15em}
 .soundpop label{display:flex;align-items:center;gap:8px;font-size:.88rem;margin:6px 0}
 .soundpop input[type=range]{flex:1}
-footer.site{position:absolute;left:0;right:0;bottom:calc(2px + env(safe-area-inset-bottom,0px));z-index:30;text-align:center;color:rgba(240,226,196,.88);font-size:.66rem;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 6px;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.85)}
+footer.site{position:relative;text-align:center;color:rgba(240,226,196,.88);font-size:.66rem;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:3px 6px;pointer-events:none}
 .devlog{font-size:.82rem;white-space:pre-wrap}
 .turnbanner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5}
 .turnbanner span{font-family:Georgia,serif;font-size:clamp(1.4rem,5vw,2.6rem);font-weight:700;color:#fff8ea;text-shadow:0 2px 12px #000;background:rgba(20,12,2,.45);padding:.2em .8em;border-radius:12px}
@@ -212,7 +216,6 @@ footer.site{position:absolute;left:0;right:0;bottom:calc(2px + env(safe-area-ins
 .menutabs button[aria-selected="true"]{background:#12a9d6;border-color:#6fe3ff;color:#032530}
 .menuobj{background:rgba(43,56,71,.55)}
 .readoutwrap{background:rgba(23,32,43,.9);color:#eef5f9;border-color:rgba(110,205,240,.38);box-shadow:0 6px 28px rgba(0,0,0,.5)}
-#readoutClose{background:rgba(43,56,71,.9);color:#eef5f9;border-color:rgba(110,205,240,.35)}
 .overlay{background:rgba(5,9,13,.74)}
 .sheet{background:rgba(23,32,43,.94);color:#eef5f9;border:1px solid rgba(110,205,240,.35)}
 #factoryCard{background:rgba(23,32,43,.95);color:#eef5f9;border-color:rgba(110,205,240,.38)}
@@ -227,15 +230,6 @@ footer.site{color:rgba(210,235,245,.88)}
 @media (max-width:560px){
   footer.site{white-space:normal;overflow:visible;text-overflow:clip;font-size:.62rem;line-height:1.25}
 }
-/* ---- Readout collapse: the card shrinks to a slim strip so the
-   player can peek under it without dismissing the inspection. The
-   card keeps pointer-events only on itself; the map beneath stays
-   fully pannable while the card is open. ---- */
-#readoutToggle{position:absolute;top:6px;right:38px;width:26px;height:26px;border-radius:50%;padding:0;line-height:1;font-size:.8rem;background:rgba(43,56,71,.9);color:#eef5f9;border:1px solid rgba(110,205,240,.35);z-index:2}
-.readoutwrap .ro-strip{display:none;font-size:.82rem;color:#eef5f9;padding:7px 40px 7px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.readoutwrap.collapsed .readout{display:none}
-.readoutwrap.collapsed .ro-strip{display:block}
-.readoutwrap.collapsed{max-height:none}
 /* ---- Combat FX: muzzle flash, tracer, impact burst, debris puff,
    topple ghosts, knockback/flash on the struck piece, recoil on the
    attacker, and a micro screen shake on the board. All wordless,
@@ -312,16 +306,14 @@ footer.site{color:rgba(210,235,245,.88)}
     </div>
   </div>
 
-  <div class="readoutwrap ro-hidden" id="readoutWrap">
-    <div class="readout" id="readout"><div class="ro-terrain">Commander Wren takes the table. Meet her, then begin the battle for Terra. Tap any hex to inspect its terrain and whatever stands on it.</div></div>
-    <div class="ro-strip" id="readoutStrip">Inspection — tap ▴ to expand</div>
-    <button type="button" id="readoutToggle" aria-label="Collapse inspection card">▾</button>
-    <button type="button" id="readoutClose" aria-label="Dismiss inspection card">✕</button>
-  </div>
-
   <section class="card hidden" id="factoryCard"></section>
 
-  <footer class="site">Xenofront · Created by Matthew Haber · © 2026 Matthew Haber. All rights reserved.</footer>
+  <div class="bottomstack" id="bottomStack">
+    <div class="readoutwrap" id="readoutWrap">
+      <div class="readout" id="readout"><div class="ro-terrain">Commander Wren takes the table. Meet her, then begin the battle for Terra. Tap any hex to inspect its terrain and whatever stands on it.</div></div>
+    </div>
+    <footer class="site">Xenofront · Created by Matthew Haber · © 2026 Matthew Haber. All rights reserved.</footer>
+  </div>
 </div>
 
 <div class="menuoverlay hidden" id="menuOverlay">
@@ -393,7 +385,7 @@ footer.site{color:rgba(210,235,245,.88)}
     <p><b>The Ruin:</b> the Old Ruin at the table's heart is more than scenery. Its ancient amber turret is alive: while the ruin is neutral it fires on anyone from either army who lingers in range 2–3. Infantry, Mech and Wren can capture the ruin like a property over two turns — stand on its hex beside the turret and choose Capture. Whoever holds the ruin gains +250 income a turn, and the turret changes allegiance with it, turning its guns on the holder's enemies. It can be re-captured the same way, and the turret flips with it. Its kills are credited to whoever holds it.</p>
     <p><b>Veterans:</b> units earn experience and rank chevrons (about +10% damage per rank) and keep a personal kill count, shown with a skull badge. Drone kills credit the shooter; tower kills credit the tower.</p>
     <p><b>Forgiveness:</b> a unit that has only moved can undo its move with the curved-arrow button that appears above it. A move that reveals new ground or a hidden enemy cannot be taken back. The battle saves itself as you play; resume it from the menu's Game section.</p>
-    <p><b>Inspecting the table:</b> tap any hex and the readout card floating at the bottom shows that hex's terrain on the left and, when a unit or tower you can see stands there, its full details on the right; close it with its ✕ to return to the full map, or fold it to a slim strip with its ▾ chevron to peek underneath. If the hex you tap sits behind the card, the table pans itself just enough to bring it clear. The table is larger than the screen and drags to pan in every direction, even while the card is open; the menu (top-right) holds the objectives with live progress, sound settings, these rules, kill counts, the battle log and game controls, so the table itself stays clear.</p>
+    <p><b>Inspecting the table:</b> tap any hex and the status bar fixed at the bottom of the screen shows that hex's terrain on the left and, when a unit or tower you can see stands there, its full details on the right. The bar is permanent and the map fills exactly the space above it, so no hex or unit is ever hidden behind it. The table is larger than the map area and drags to pan in every direction; the menu (top-right) holds the objectives with live progress, sound settings, these rules, kill counts, the battle log and game controls, so the table itself stays clear.</p>
   </div>
 </div>
 
@@ -413,6 +405,7 @@ footer.site{color:rgba(210,235,245,.88)}
    diorama sheets (board plate + blue/red miniature sheets + property
    sheet). Nothing on the table is drawn or vector-substituted. */
 var DEVLOG = [
+ 'Permanent status bar + dual-contrast hex outlines. (1) LAYOUT: the floating readout card is gone as an overlay. The shell is now a stacked column — the map viewport fills exactly the space above a permanent bottom stack, and the status bar (the same slate-glass terrain + unit readout) lives in that stack in normal layout flow, always present and sized to its content, with the byte-exact copyright footer as its own slim line directly beneath it, fully readable and never ellipsized on wide screens (still wraps on narrow ones). Nothing of the map can render underneath the bar, so bottom-row hexes and units are always fully visible and tappable. The dismiss ✕ and the chevron collapse are removed; the bar content updates in place exactly as the card did, with the same resting text at battle start, two columns on wide screens and stacked rows in the same bar on narrow portrait. All world math already keyed off the board element size, so cover scale, zoom, pan clamping and the blue-army opening anchor now derive from the real map area (viewport minus the bottom stack); a ResizeObserver on the stack re-runs the layout whenever the bar changes height. The old auto-frame that shoved inspected hexes clear of the floating card is replaced by a gentle keep-inside-the-viewport framing. The top HUD still floats over the maps top; gameplay, travel, FX, fog, menus, audio and save v4 are untouched. (2) OUTLINES: contextual hex strokes are now dual-contrast — a wider warm near-black under-stroke with the colored stroke on top — in both the highlight layer (move range, Wren aura, target and forecast hexes, the selected hex, capture flashes; the gold move stroke also goes 1.5 to 1.8 wide and a touch stronger) and the owner outlines (blue, red and the faint neutral parchment, which vanished on bright grass before). The gold identity and the fills are unchanged and no permanent grid appears; the outlines simply carry their own contrast against sunlit grass, dirt and dark forest alike.',
  'Export-readiness pass — image plumbing only, no gameplay, visual or audio change. All 39 miniature and property sprites are now baked into this file itself as WebP data URIs (max 384px, quality 88, at least 2x their largest on-screen size — the same treatment the published Pages copy already used) in a SPRITES lookup keyed by the original asset filename. spriteFor, the property and tower renderers, the factory build menu icons and the Commander Wren intro card all read from that lookup instead of building file paths by string concatenation, which the single-file exporter could not resolve (it reported the concatenated prefixes as unresolved assets). The board plate stays a normal asset reference, which the exporter inlines as before. The travel animation and travel sounds, the wordless board, the save format and keys, and the byte-exact footer are untouched. The page title is now simply Xenofront, matching the published page. Result: the export produces one complete, fully playable HTML file with zero unresolved assets and no image 404s, with or without an assets folder beside it.',
  'Travel pass — units now TRAVEL to their destination instead of popping. A Dijkstra path helper (findPath) reconstructs the exact legal route using the same moveCostAt, terrain and occupancy pass-through rules that built moveSet, so ground units follow hex centres along a route they could legally take; air units (Battle Copter, drone) fly a straight line. A transient visual override (travelState, never saved) lets renderUnits draw the moving piece at interpolated positions while logical position, fog computation, information-gated undo and save commit exactly as before; presentation catches up at roughly 150ms per hex (120ms for CPU, 90ms for drones), capped at 1.6s. Flavour per movement type: treads glide with a faint bob plus dust puffs at hex steps, wheels glide steady with puffs, Infantry/Mech/Wren bob with a step rhythm (one bounce per hex), the copter lifts (sprite raised, pooled shadow stays on the ground) with a gentle banking sway and settles on arrival, the drone darts with a light tilt; the traveller renders above other units and no sprite is ever flipped. Input locks with the existing busy flag from departure to arrival, and the action cluster / auto-confirm Wait / undo offer present only after arrival, exactly as instantly before; undo itself restores instantly. CPU moves animate the same way, sequenced inside the CPU turn so the next red action waits for arrival. TRAVEL SOUNDS: a new startTravelSound routine on the existing SFX bus/compressor, in the same layered-primitive style as sfxWeapon, started at departure and stopped at arrival with length tied to the animation — copter sustained rotor chop, Tank/Medium Tank low engine rumble with tread clank, Siege/Artillery/Rockets deeper slower diesel, Recon/APC lighter hum with tire whir, Anti-Air mid hum, Mech heavy footstep thuds per hex with servo whine, Infantry soft step taps per hex, Wren steps plus powered-armour servo, drone extended whir for the duration. It replaces the generic move blip for those units; CPU travel plays at 0.6 volume (the counterattack convention). AU.travels counts invocations per class for dev assertion, alongside AU.shots. Under prefers-reduced-motion travel is instant as before but a short travel sound still fires. Audio session guard, unlock/resume hardening, music, volume sliders, wordless board, save format (still v4, no shape change), combat FX and the byte-exact footer are untouched.',
  'Six-part playtest pass. (1) BIGGER, ROAMING MAP: the world is no longer mere cover-fit — it is scaled to cover times a zoom factor (about 1.55x on phones, 1.45x on tablets, 1.25x on wide screens), one uniform scale only, so the table deliberately overflows the viewport on both axes and is roamed by dragging in every direction. The opening framing anchors west and south on the blue deployment. Drag-pan keeps its tap suppression and gains flick inertia with friction; a smooth animated pan drives auto-framing. (2) THE READOUT NEVER TRAPS A UNIT: the map stays fully pannable while the inspection card is open (the card holds pointer-events only on its own surface), inspecting a hex that sits behind the card smoothly pans the world just enough to rest the hex clearly above the card with a margin — and does not move at all when the hex is already clear — and the card gains a chevron collapse that folds it to a slim strip for peeking underneath without dismissing. (3) FOG BECOMES CAT AND MOUSE: vision radii are cut across the roster (infantry/mech/Wren/vehicles/artillery 2, medium tank and copter 3, recon stays the dedicated eyes at 4, towers 3, drones 3, ruin turret 3), nothing drops below 2, forest/mountain sight-blocking and forest hiding are untouched, indirect ranges are untouched (they fire at what others spot), and the starting reveal now hugs each deployment corner instead of reaching mid-map — at battle start no enemy unit is visible from either start. The CPU uses the identical vision numbers; there is no informational cheating. Recons and drones are now the real scouts. (4) NO MIRROR COMMANDER: the red Wren is removed entirely — the CPU fields no commander unit anywhere (board, intro, readout, kill counts), its drone-launch AI is deleted, and in compensation it starts with +750 funds (1450) and an extra Recon as its eyes. The intro, objectives, battle log opener and How to Play now describe a commander-less mechanized column; the player\u2019s Wren is unchanged in every particular. Save version bumped to v4; v3 saves no longer load. (5) THE RUIN HAS A PURPOSE: the Old Ruin is capturable like a property over two turns (its turret is a fixture of the hex and never blocks a capturer from standing beside it), pays +250 income a turn once held, and its amber turret changes allegiance with the ruin — neutral it fires on both armies in range 2\u20133; held, it fires on the holder\u2019s enemies; re-capture flips it again. The ruin stone itself stays ancient grey under any owner (no warm CPU variant, muted grade), only its hex outline and turret light-glow take the owner\u2019s accent (amber neutral, cyan blue, warm red). Its readout explains all of this in place, How to Play gains a Ruin note, and kill counts credit turret kills to the ruin\u2019s current holder as \u201cRuin turret\u201d. (6) COMBAT JUICE: strikes now move. doAttack snapshots both pieces before damage and queues wordless FX that flushFx plays against the freshly rendered board: the attacker recoils with a muzzle flash at the barrel and a tracer streaks to the target (duration keyed to the weapon\u2019s own impact delay, so sound and picture land together — weapon voice at the flash, impact voice at tracer arrival); a survivor flashes, knocks a few px away from the shot with size scaled by damage, and its HP pips pulse as they drain; a kill TOPPLES — a ghost of the miniature tips ~82\u00b0 over its base edge with a settle bounce, a debris puff at its base, a ~90ms hit-stop, and the kill explosion — counterattack kills topple the attacker identically, siege splash victims burst/topple too, and a destroyed tower crumbles (tilt, sink, dust) instead of toppling. A micro screen shake scales with damage (about 1.2px light, 2.5 mid, 4 heavy, 5 on kills; ~190\u2013240ms). Under prefers-reduced-motion the shake, tracer, flash and knockback are suppressed and topples become simple fades. FX never touch game state, input is never blocked beyond the existing strike flow, and CPU volleys play sequentially through the normal render cycle with no pile-up. Footer byte-exact and untouched.',
@@ -1202,7 +1195,14 @@ function ownerHexPoly(c, r, owner, strength){
   var fa = Math.max(0.01, Math.min(0.10, fillA * (strength || 1)));
   var wdt = 1.6 * (strength && strength > 1 ? 1.1 : 1);
   var dimmed = visNow[key(c, r)] ? 1 : 0.72;
-  return '<polygon points="' + hexPoints(hexCX(c, r), hexCY(r), 0.90) + '" fill="' + fill + fa.toFixed(3) + ')" stroke="' + stroke + a.toFixed(3) + ')" stroke-width="' + wdt.toFixed(2) + '" stroke-linejoin="round" opacity="' + dimmed + '"/>';
+  /* Same dual-contrast treatment as the interaction hexes: a dark
+     under-stroke carries the owner color's legibility on any
+     terrain brightness — the faint neutral parchment line needed
+     it most, disappearing entirely on sunlit grass before. */
+  var pts = hexPoints(hexCX(c, r), hexCY(r), 0.90);
+  var ua = Math.min(0.68, Math.max(0.34, a * 0.8)).toFixed(3);
+  return '<polygon points="' + pts + '" fill="' + fill + fa.toFixed(3) + ')" stroke="rgba(26,17,7,' + ua + ')" stroke-width="' + (wdt + 2.4).toFixed(2) + '" stroke-linejoin="round" opacity="' + dimmed + '"/>' +
+    '<polygon points="' + pts + '" fill="none" stroke="' + stroke + a.toFixed(3) + ')" stroke-width="' + wdt.toFixed(2) + '" stroke-linejoin="round" opacity="' + dimmed + '"/>';
 }
 function renderProps(){
   var html = '', ownerHtml = '';
@@ -1258,8 +1258,21 @@ function renderFog(){
 }
 function renderHighlights(){
   var out = '';
+  /* Dual-contrast outlines: every contextual stroke is drawn twice —
+     a wider dark under-stroke (warm near-black) first, then the
+     colored stroke on top. A lone gold line washes out on the
+     sunlit yellow-green grass (yellow on yellow); with its own dark
+     edge the same gold reads on bright grass, dirt and dark forest
+     alike, and the red/owner lines gain the same insurance. No
+     extra fill is added, so the plate never muddies. */
   function poly(c, r, fill, stroke, w){
-    return '<polygon points="' + hexPoints(hexCX(c, r), hexCY(r)) + '" fill="' + fill + '" stroke="' + (stroke || 'none') + '" stroke-width="' + (w || 0) + '"/>';
+    var pts = hexPoints(hexCX(c, r), hexCY(r));
+    if (!stroke || !(w > 0)) return '<polygon points="' + pts + '" fill="' + fill + '" stroke="none"/>';
+    var m = /rgba?\(([^)]+)\)/.exec(stroke), sa = 0.85;
+    if (m){ var parts = m[1].split(','); if (parts.length === 4) sa = parseFloat(parts[3]); }
+    var ua = Math.min(0.72, Math.max(0.34, sa * 0.85)).toFixed(3);
+    return '<polygon points="' + pts + '" fill="' + fill + '" stroke="rgba(26,17,7,' + ua + ')" stroke-width="' + (w + 2.4).toFixed(2) + '" stroke-linejoin="round"/>' +
+      '<polygon points="' + pts + '" fill="none" stroke="' + stroke + '" stroke-width="' + w + '" stroke-linejoin="round"/>';
   }
   if ((selUnit || selTower) && G.side === 'P'){
     var anchor = selTower || selUnit;
@@ -1267,7 +1280,7 @@ function renderHighlights(){
       for (var r1 = 0; r1 < ROWS; r1++) for (var c1 = 0; c1 < COLS; c1++)
         if (hexDist([c1, r1], [selUnit.c, selUnit.r]) <= 2 && !(c1 === selUnit.c && r1 === selUnit.r)) out += poly(c1, r1, 'rgba(217,164,65,0.14)', 'rgba(217,164,65,0.35)', 1);
     }
-    for (var k in moveSet) { var p = k.split(','); out += poly(+p[0], +p[1], 'rgba(240,200,90,0.20)', 'rgba(240,200,90,0.55)', 1.5); }
+    for (var k in moveSet) { var p = k.split(','); out += poly(+p[0], +p[1], 'rgba(240,200,90,0.20)', 'rgba(240,200,90,0.62)', 1.8); }
     var curAtt = currentAttacker();
     if (curAtt){
       for (var i = 0; i < G.units.length; i++){
@@ -2740,19 +2753,23 @@ function inertiaStep(now){
   if (Math.abs(inertia.vx) > 0.015 || Math.abs(inertia.vy) > 0.015) requestAnimationFrame(inertiaStep);
   else inertia = null;
 }
-/* Auto-frame: when a hex is inspected and it sits behind (or too
-   close above) the readout card, pan the world just enough that the
-   hex and its unit rest clearly above the card with a small margin.
-   If the hex is already clear, the map does not move. */
+/* Auto-frame: the status bar is a permanent layout strip below the
+   map now, so no hex can ever sit behind it — framing only keeps an
+   inspected hex comfortably inside the map viewport, panning the
+   minimum needed when it hugs an edge. If it is already comfortable,
+   the map does not move. */
 function frameHex(c, r){
-  var wrap = document.getElementById('readoutWrap');
-  if (!wrap || wrap.classList.contains('ro-hidden') || !boardEl) return;
-  var br = boardEl.getBoundingClientRect(), cr = wrap.getBoundingClientRect();
-  var sy = view.y + hexCY(r) / BH * view.h;
-  var limit = (cr.top - br.top) - 34;
-  if (sy > limit) animateViewTo(view.x, view.y - (sy - limit), 320);
+  if (!boardEl) return;
+  var vw = boardEl.clientWidth, vh = boardEl.clientHeight;
+  var sx = view.x + hexCX(c) / BW * view.w, sy = view.y + hexCY(r) / BH * view.h;
+  var m = 52, tx = view.x, ty = view.y;
+  if (sx < m) tx = view.x + (m - sx); else if (sx > vw - m) tx = view.x - (sx - (vw - m));
+  if (sy < m) ty = view.y + (m - sy); else if (sy > vh - m) ty = view.y - (sy - (vh - m));
+  if (tx !== view.x || ty !== view.y) animateViewTo(tx, ty, 320);
 }
-function showReadout(){ var w = document.getElementById('readoutWrap'); if (w) w.classList.remove('ro-hidden'); }
+/* The status bar is permanent: there is nothing to show or hide.
+   Kept as a no-op so the existing call sites read unchanged. */
+function showReadout(){}
 function hexFromEvent(ev){
   var rect = worldEl.getBoundingClientRect();
   var x = (ev.clientX - rect.left) / rect.width * BW, y = (ev.clientY - rect.top) / rect.height * BH;
@@ -2826,15 +2843,15 @@ function init(){
   }
   boardEl.addEventListener('pointerup', endPan);
   boardEl.addEventListener('pointercancel', endPan);
-  document.getElementById('readoutClose').addEventListener('click', function(){
-    document.getElementById('readoutWrap').classList.add('ro-hidden');
-  });
-  document.getElementById('readoutToggle').addEventListener('click', function(){
-    var w = document.getElementById('readoutWrap');
-    var collapsed = w.classList.toggle('collapsed');
-    this.textContent = collapsed ? '▴' : '▾';
-    this.setAttribute('aria-label', collapsed ? 'Expand inspection card' : 'Collapse inspection card');
-  });
+  /* The status bar's height is content-sized, so whenever it grows
+     or shrinks (a unit readout wrapping, narrow-screen stacking) the
+     map viewport resizes in the flex column — re-run the world
+     layout off the board's new size so cover scale, pan clamping
+     and anchoring always match the real map area. */
+  if (window.ResizeObserver){
+    var stackEl = document.getElementById('bottomStack');
+    if (stackEl) new ResizeObserver(function(){ layoutWorld(); }).observe(stackEl);
+  }
   boardEl.addEventListener('click', function(ev){
     if (suppressClick) return;
     if (!G){ return; }
