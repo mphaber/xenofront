@@ -231,22 +231,48 @@ footer.site{color:rgba(210,235,245,.88)}
   footer.site{white-space:normal;overflow:visible;text-overflow:clip;font-size:.62rem;line-height:1.25}
 }
 /* ---- Combat FX: muzzle flash, tracer, impact burst, debris puff,
-   topple ghosts, knockback/flash on the struck piece, recoil on the
-   attacker, and a micro screen shake on the board. All wordless,
-   all pointer-transparent, all spawned by flushFx after render. ---- */
+   explosion-death treatments (fireball, glow, smoke, sparks, scorch
+   and splat decals, consumed/falling ghosts — nothing topples),
+   knockback/flash on the struck piece, recoil on the attacker, and
+   a micro screen shake on the board. All wordless, all
+   pointer-transparent, all spawned by flushFx after render. ---- */
 #fxLayer{position:absolute;inset:0;pointer-events:none;z-index:55}
-.fx-flash{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#fffbe8 0%,#ffd94f 38%,rgba(255,160,40,0) 70%);animation:fxflashAnim .18s ease-out forwards;pointer-events:none}
+.fx-flash{position:absolute;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:1;background:radial-gradient(circle,#fffbe8 0%,#ffd94f 38%,rgba(255,160,40,0) 70%);animation:fxflashAnim .18s ease-out forwards;pointer-events:none}
 @keyframes fxflashAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(.45)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}
 .fx-tracer{position:absolute;height:3px;border-radius:2px;background:linear-gradient(90deg,rgba(255,240,180,0),#ffe9a0 35%,#ffffff);box-shadow:0 0 6px rgba(255,210,90,.9);transform-origin:0 50%;pointer-events:none;animation-name:fxtracerAnim;animation-timing-function:linear;animation-fill-mode:forwards}
 @keyframes fxtracerAnim{0%{transform:rotate(var(--ang,0rad)) scaleX(0);opacity:.95}70%{opacity:.95}100%{transform:rotate(var(--ang,0rad)) scaleX(1);opacity:0}}
-.fx-burst{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95) 0%,rgba(255,190,80,.85) 30%,rgba(220,90,40,.45) 55%,rgba(120,60,30,0) 72%);animation:fxburstAnim .22s ease-out forwards;pointer-events:none}
+.fx-burst{position:absolute;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:1;background:radial-gradient(circle,rgba(255,255,255,.95) 0%,rgba(255,190,80,.85) 30%,rgba(220,90,40,.45) 55%,rgba(120,60,30,0) 72%);animation:fxburstAnim .22s ease-out forwards;pointer-events:none}
 @keyframes fxburstAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.2)}}
-.fx-puff{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(148,124,92,.75) 0%,rgba(120,98,70,.45) 45%,rgba(100,80,55,0) 72%);animation:fxpuffAnim .55s ease-out forwards;pointer-events:none}
+.fx-puff{position:absolute;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:1;background:radial-gradient(circle,rgba(148,124,92,.75) 0%,rgba(120,98,70,.45) 45%,rgba(100,80,55,0) 72%);animation:fxpuffAnim .55s ease-out forwards;pointer-events:none}
 @keyframes fxpuffAnim{0%{opacity:.9;transform:translate(-50%,-50%) scale(.35)}100%{opacity:0;transform:translate(-50%,-58%) scale(1.5)}}
 .fx-ghost{position:absolute;transform:translate(-50%,-50%);pointer-events:none}
 .fx-ghost img{width:100%;display:block}
-.fx-ghost.topple{transform-origin:50% 88%;animation:fxtoppleAnim .5s ease-in .09s forwards;opacity:0}
-@keyframes fxtoppleAnim{0%{transform:translate(-50%,-50%) rotate(0deg);opacity:1}45%{transform:translate(-50%,-49%) rotate(calc(var(--dir,82deg) * .82));opacity:1}68%{transform:translate(-50%,-46%) rotate(var(--dir,82deg));opacity:1}82%{transform:translate(-50%,-45%) rotate(calc(var(--dir,82deg) * .93));opacity:1}100%{transform:translate(-50%,-42%) rotate(var(--dir,82deg));opacity:0}}
+/* Death ghosts: nothing topples. A vehicle/mech ghost is consumed by
+   its fireball (white-hot flash, then fade); infantry and Wren drop
+   straight down where they stand; the copter falls out of the sky
+   with a slight spin; the drone pops and drops. Structures crumble. */
+.fx-ghost.consumed{animation:fxconsumedAnim .5s ease-out forwards}
+@keyframes fxconsumedAnim{0%{opacity:1;filter:brightness(3.2) saturate(.4)}35%{opacity:1;filter:brightness(1.7)}100%{opacity:0;transform:translate(-50%,-47%) scale(.94);filter:brightness(.7)}}
+.fx-ghost.drop{animation:fxdropAnim .34s ease-in forwards}
+@keyframes fxdropAnim{0%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-43%) scale(.97)}}
+.fx-ghost.falling{animation:fxfallAnim .5s ease-in forwards}
+@keyframes fxfallAnim{0%{opacity:1;transform:translate(-50%,-88%) rotate(-7deg)}70%{opacity:1}100%{opacity:.92;transform:translate(-50%,-44%) rotate(24deg)}}
+.fx-ghost.popfall{animation:fxpopAnim .38s ease-in forwards}
+@keyframes fxpopAnim{0%{opacity:1;transform:translate(-50%,-68%)}100%{opacity:0;transform:translate(-50%,-40%)}}
+.fx-fireball{position:absolute;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:1;background:radial-gradient(circle,#fffbe8 0%,#ffe066 26%,#ff9a2e 55%,rgba(228,84,22,.55) 76%,rgba(170,45,10,0) 100%);box-shadow:0 0 34px 10px rgba(255,150,50,.5);animation:fxfireAnim .62s ease-out forwards;pointer-events:none}
+@keyframes fxfireAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(.32)}38%{opacity:1;transform:translate(-50%,-52%) scale(1.04)}100%{opacity:0;transform:translate(-50%,-56%) scale(1.16)}}
+.fx-glow{position:absolute;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:1;background:radial-gradient(circle,rgba(255,196,90,.6) 0%,rgba(255,150,50,.28) 52%,rgba(255,130,40,0) 72%);animation:fxglowAnim .72s ease-out forwards;pointer-events:none}
+@keyframes fxglowAnim{0%{opacity:0}18%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.12)}}
+.fx-smoke{position:absolute;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:1;background:radial-gradient(circle,rgba(112,96,80,.8) 0%,rgba(96,82,66,.55) 48%,rgba(90,76,60,0) 74%);animation:fxsmokeAnim 2.6s ease-out both;pointer-events:none}
+@keyframes fxsmokeAnim{0%{opacity:0;transform:translate(-50%,-46%) scale(.45)}16%{opacity:.88}100%{opacity:0;transform:translate(calc(-50% + var(--drift,10px)),-150%) scale(1.55)}}
+.fx-scorch{position:absolute;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:16/10;background:radial-gradient(ellipse at center,rgba(16,10,5,.88) 0%,rgba(26,16,7,.62) 46%,rgba(38,24,10,0) 74%);animation:fxscorchAnim 5.5s linear forwards;pointer-events:none}
+@keyframes fxscorchAnim{0%{opacity:0}7%{opacity:.92}62%{opacity:.8}100%{opacity:0}}
+.fx-splat{position:absolute;transform:translate(-50%,-50%);border-radius:46% 54% 58% 42%/56% 44% 58% 44%;aspect-ratio:16/11;background:radial-gradient(ellipse at center,rgba(96,12,9,.92) 0%,rgba(80,10,8,.72) 52%,rgba(70,10,8,0) 78%);animation:fxsplatAnim 4.5s linear forwards;pointer-events:none}
+@keyframes fxsplatAnim{0%{opacity:0;transform:translate(-50%,-50%) scale(.35)}10%{opacity:.95;transform:translate(-50%,-50%) scale(1)}70%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(1.04)}}
+.fx-spark{position:absolute;height:3px;border-radius:2px;background:#ffd76a;box-shadow:0 0 6px rgba(255,190,80,.95);animation:fxsparkAnim .52s ease-out forwards;pointer-events:none}
+.fx-spark.elec{background:#cfeeff;box-shadow:0 0 7px rgba(140,220,255,.95)}
+@keyframes fxsparkAnim{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--sx,14px),var(--sy,-10px))}}
+.fx-deathflash{position:absolute;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:1;background:radial-gradient(circle,#fffbe8 0%,#ffd94f 40%,rgba(255,160,40,0) 72%);animation:fxfadeAnim .34s ease-out forwards;pointer-events:none}
 .fx-ghost.crumble{transform-origin:50% 90%;animation:fxcrumbleAnim .55s ease-in forwards}
 @keyframes fxcrumbleAnim{0%{transform:translate(-50%,-50%) rotate(0deg);opacity:1}45%{transform:translate(-50%,-44%) rotate(9deg);opacity:1}100%{transform:translate(-50%,-34%) rotate(14deg);opacity:0}}
 .fx-ghost.fadeout{animation:fxfadeAnim .3s ease-out forwards}
@@ -262,11 +288,14 @@ footer.site{color:rgba(210,235,245,.88)}
 #board.shaking{animation:boardshakeAnim var(--shdur,.2s) linear}
 @keyframes boardshakeAnim{0%{transform:translate(0,0)}25%{transform:translate(var(--shx,2px),calc(var(--shx,2px) * -.6))}50%{transform:translate(calc(var(--shx,2px) * -.8),var(--shx,2px))}75%{transform:translate(calc(var(--shx,2px) * .5),calc(var(--shx,2px) * .4))}100%{transform:translate(0,0)}}
 .world.hitstop .piece,.world.hitstop .prop{transition:none !important}
-/* Reduced motion: no shake, no tracer streak, no knockback — topples
-   and crumbles become simple fades, flashes are suppressed. */
+/* Reduced motion: no shake, no tracer streak, no knockback, no
+   falling or spinning deaths — death ghosts become simple fades,
+   smoke and sparks are suppressed, and only a brief static flash
+   plus the splat/scorch decal marks a kill. */
 @media (prefers-reduced-motion: reduce){
   .fx-tracer,.fx-flash{display:none}
-  .fx-ghost.topple,.fx-ghost.crumble{animation:fxfadeAnim .3s ease-out forwards;transform-origin:50% 50%}
+  .fx-smoke,.fx-spark{display:none}
+  .fx-ghost.crumble,.fx-ghost.consumed,.fx-ghost.drop,.fx-ghost.falling,.fx-ghost.popfall{animation:fxfadeAnim .3s ease-out forwards;transform-origin:50% 50%}
   .piece.fx-hit,.piece.fx-recoil{animation:none}
   .piece.fx-hit img{animation:none}
   #board.shaking{animation:none}
@@ -405,6 +434,7 @@ footer.site{color:rgba(210,235,245,.88)}
    diorama sheets (board plate + blue/red miniature sheets + property
    sheet). Nothing on the table is drawn or vector-substituted. */
 var DEVLOG = [
+ 'Explosion deaths — the topple is gone. No unit rotates or falls over sideways as its death anymore, on any death path (direct kills, counterattacks, siege splash, tower and ruin-turret kills). Deaths now speak the reference game\'s explosion language, scaled to a one-kill-at-a-time table: ground vehicles die in a round fireball — bright yellow-white core, orange edge — with debris sparks thrown outward, the miniature consumed by the burst (white-hot flash and fade inside it), a warm glow lighting its hex during the flash, a grey-brown smoke plume that rises and drifts for two to three seconds, and a dark scorch mark left on the hex fading over the following seconds. Size scales with the machine: Siege and Medium Tank biggest, Tank, Artillery and Rockets mid, Anti-Air smaller, Recon and APC smallest. The Battle Copter dies in the air: it drops from flight height trailing smoke with a slight spin and fireballs on impact, then plume and scorch as above. The Mech gets a mid-size spark-and-flame burst and leaves a splat-and-scorch mark. Infantry and Commander Wren get no fireball: they drop fast where they stand under a spreading dark red splat decal with a small dust puff; Wren adds a short electric spark burst as her suit powers down, and her downed-and-return flow is unchanged. The scout drone pops electrically and falls, no fireball, no splat. Towers and the ruin turret now open their existing crumble with a fireball burst and smoke; a killed turret leaves the ruin scorched. Sound gains a dedicated layered kill explosion on the same SFX bus and compressor — a low boom plus a crackle-and-debris tail, scaled by class (vehicles and structures biggest, Mech mid, the copter adds a falling whistle into its impact boom, infantry a quiet dull thud, Wren a thud with power-down sparks, the drone a small electric zap-pop), CPU kills at the usual reduced volume. Damage-scaled shake, hit-stop, damage numbers and pips, kill counts and credits, fog (hidden deaths stay hidden exactly as combat FX handled them), the save format, travel and the wordless board are all untouched; smoke and decals linger passively after input returns, inside the same combat FX envelope as before. Reduced motion: no fall, spin or shake — a brief static flash plus the splat/scorch decal, kill sound unchanged.',
  'Permanent status bar + dual-contrast hex outlines. (1) LAYOUT: the floating readout card is gone as an overlay. The shell is now a stacked column — the map viewport fills exactly the space above a permanent bottom stack, and the status bar (the same slate-glass terrain + unit readout) lives in that stack in normal layout flow, always present and sized to its content, with the byte-exact copyright footer as its own slim line directly beneath it, fully readable and never ellipsized on wide screens (still wraps on narrow ones). Nothing of the map can render underneath the bar, so bottom-row hexes and units are always fully visible and tappable. The dismiss ✕ and the chevron collapse are removed; the bar content updates in place exactly as the card did, with the same resting text at battle start, two columns on wide screens and stacked rows in the same bar on narrow portrait. All world math already keyed off the board element size, so cover scale, zoom, pan clamping and the blue-army opening anchor now derive from the real map area (viewport minus the bottom stack); a ResizeObserver on the stack re-runs the layout whenever the bar changes height. The old auto-frame that shoved inspected hexes clear of the floating card is replaced by a gentle keep-inside-the-viewport framing. The top HUD still floats over the maps top; gameplay, travel, FX, fog, menus, audio and save v4 are untouched. (2) OUTLINES: contextual hex strokes are now dual-contrast — a wider warm near-black under-stroke with the colored stroke on top — in both the highlight layer (move range, Wren aura, target and forecast hexes, the selected hex, capture flashes; the gold move stroke also goes 1.5 to 1.8 wide and a touch stronger) and the owner outlines (blue, red and the faint neutral parchment, which vanished on bright grass before). The gold identity and the fills are unchanged and no permanent grid appears; the outlines simply carry their own contrast against sunlit grass, dirt and dark forest alike.',
  'Export-readiness pass — image plumbing only, no gameplay, visual or audio change. All 39 miniature and property sprites are now baked into this file itself as WebP data URIs (max 384px, quality 88, at least 2x their largest on-screen size — the same treatment the published Pages copy already used) in a SPRITES lookup keyed by the original asset filename. spriteFor, the property and tower renderers, the factory build menu icons and the Commander Wren intro card all read from that lookup instead of building file paths by string concatenation, which the single-file exporter could not resolve (it reported the concatenated prefixes as unresolved assets). The board plate stays a normal asset reference, which the exporter inlines as before. The travel animation and travel sounds, the wordless board, the save format and keys, and the byte-exact footer are untouched. The page title is now simply Xenofront, matching the published page. Result: the export produces one complete, fully playable HTML file with zero unresolved assets and no image 404s, with or without an assets folder beside it.',
  'Travel pass — units now TRAVEL to their destination instead of popping. A Dijkstra path helper (findPath) reconstructs the exact legal route using the same moveCostAt, terrain and occupancy pass-through rules that built moveSet, so ground units follow hex centres along a route they could legally take; air units (Battle Copter, drone) fly a straight line. A transient visual override (travelState, never saved) lets renderUnits draw the moving piece at interpolated positions while logical position, fog computation, information-gated undo and save commit exactly as before; presentation catches up at roughly 150ms per hex (120ms for CPU, 90ms for drones), capped at 1.6s. Flavour per movement type: treads glide with a faint bob plus dust puffs at hex steps, wheels glide steady with puffs, Infantry/Mech/Wren bob with a step rhythm (one bounce per hex), the copter lifts (sprite raised, pooled shadow stays on the ground) with a gentle banking sway and settles on arrival, the drone darts with a light tilt; the traveller renders above other units and no sprite is ever flipped. Input locks with the existing busy flag from departure to arrival, and the action cluster / auto-confirm Wait / undo offer present only after arrival, exactly as instantly before; undo itself restores instantly. CPU moves animate the same way, sequenced inside the CPU turn so the next red action waits for arrival. TRAVEL SOUNDS: a new startTravelSound routine on the existing SFX bus/compressor, in the same layered-primitive style as sfxWeapon, started at departure and stopped at arrival with length tied to the animation — copter sustained rotor chop, Tank/Medium Tank low engine rumble with tread clank, Siege/Artillery/Rockets deeper slower diesel, Recon/APC lighter hum with tire whir, Anti-Air mid hum, Mech heavy footstep thuds per hex with servo whine, Infantry soft step taps per hex, Wren steps plus powered-armour servo, drone extended whir for the duration. It replaces the generic move blip for those units; CPU travel plays at 0.6 volume (the counterattack convention). AU.travels counts invocations per class for dev assertion, alongside AU.shots. Under prefers-reduced-motion travel is instant as before but a short travel sound still fires. Audio session guard, unlock/resume hardening, music, volume sliders, wordless board, save format (still v4, no shape change), combat FX and the byte-exact footer are untouched.',
@@ -943,15 +973,19 @@ function sideName(s){ return s === 'P' ? 'Blue' : s === 'E' ? 'Red' : 'Neutral';
    its end, which plays them against the freshly rendered pieces:
    attacker recoil + muzzle flash + a tracer streak, an impact burst
    scaled by damage, knockback/flash/pip-pulse on a survivor, and on
-   a kill a topple ghost (the miniature tips over like a knocked
-   tabletop piece) with a debris puff, a ~90ms hit-stop and the
-   strongest screen shake. Sounds stay where they were: the weapon
-   voice fires with the flash, sfxImpact lands with the tracer. */
+   a kill the explosion-death treatment for the victim's class (see
+   spawnDeathFx: fireball, glow, smoke, sparks and scorch for
+   vehicles and structures; a falling, fireballing copter; a spark
+   burst for the mech; a splat drop for infantry and Wren; an
+   electric pop for the drone — nothing topples), a ~90ms hit-stop
+   and the strongest screen shake. Sounds stay where they were: the
+   weapon voice fires with the flash, sfxImpact lands with the
+   tracer, and a kill routes through sfxKillExplosion instead. */
 var fxEvents = [];
 var fxLayerEl = null;
 var REDUCED_MOTION = false;
 try { REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
-function fxSnap(u){ return { id: u.id, c: u.c, r: u.r, spr: spriteFor(u), w: widthFor(u), tower: !!u.tower }; }
+function fxSnap(u){ return { id: u.id, c: u.c, r: u.r, spr: spriteFor(u), w: widthFor(u), tower: !!u.tower, type: u.type, side: u.side }; }
 function queueShotFx(a, d, dmg, killed, delay, splash){
   fxEvents.push({ a: a, d: d, dmg: dmg, killed: !!killed, delay: delay || 0.15, splash: !!splash });
 }
@@ -965,6 +999,133 @@ function fxSpawn(cls, c, r, wPct){
   return el;
 }
 function fxKill(el, ms){ setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, ms); }
+/* ---------------- Explosion deaths ----------------
+   The topple is gone: no unit rotates or falls over sideways as its
+   death. Each class dies its own way, inside the same FX envelope
+   as the shot that killed it (main beat well under ~900ms; smoke
+   and decals linger passively after input returns). Kinds and
+   scales are derived from the pre-damage snapshot, so siege splash
+   kills, counter kills, tower kills and ruin-turret kills all get
+   exactly the treatment a direct kill gets. */
+function deathKindOf(d){
+  if (!d) return 'vehicle';
+  if (d.tower || d.type === 'tower') return 'structure';
+  switch (d.type){
+    case 'turret': return 'turret';
+    case 'copter': return 'copter';
+    case 'mech': return 'mech';
+    case 'cmd': return 'cmd';
+    case 'drone': return 'drone';
+    case 'infantry': return 'infantry';
+    default: return 'vehicle';
+  }
+}
+function deathScaleOf(d){
+  if (!d) return 1;
+  if (d.tower || d.type === 'tower' || d.type === 'turret') return 1.15;
+  switch (d.type){
+    case 'siege': case 'mtank': return 1.35;
+    case 'tank': case 'arty': case 'rockets': return 1.0;
+    case 'aa': return 0.82;
+    case 'recon': case 'apc': return 0.66;
+    case 'mech': return 0.78;
+    case 'copter': return 1.05;
+    case 'drone': return 0.4;
+    default: return 0.7;
+  }
+}
+function spawnDeathFx(ev){
+  var d = ev.d, kind = deathKindOf(d), sc = deathScaleOf(d), c = d.c, r = d.r;
+  function ghost(cls, ms){
+    var gh = fxSpawn('fx-ghost', c, r, d.w);
+    gh.innerHTML = '<img src="' + d.spr + '" alt="">';
+    gh.classList.add(cls);
+    fxKill(gh, ms);
+    return gh;
+  }
+  function decal(cls, w, ms){ var el = fxSpawn(cls, c, r, w); fxKill(el, ms); return el; }
+  function smoke(n, w){
+    for (var i = 0; i < n; i++){
+      var sm = fxSpawn('fx-smoke', c, r, w * (0.8 + Math.random() * 0.5));
+      sm.style.animationDelay = (0.12 + i * 0.28) + 's';
+      sm.style.setProperty('--drift', (Math.random() * 26 - 8).toFixed(0) + 'px');
+      fxKill(sm, 3500 + i * 300);
+    }
+  }
+  function sparks(n, elec){
+    for (var i = 0; i < n; i++){
+      var sp = fxSpawn('fx-spark' + (elec ? ' elec' : ''), c, r, 0);
+      sp.style.width = (0.5 + Math.random() * 0.5) + '%';
+      var ang = Math.random() * Math.PI * 2, dist = 12 + Math.random() * 26;
+      sp.style.setProperty('--sx', (Math.cos(ang) * dist).toFixed(0) + 'px');
+      sp.style.setProperty('--sy', (Math.sin(ang) * dist - 10).toFixed(0) + 'px');
+      fxKill(sp, 640);
+    }
+  }
+  function fireballSet(){
+    fxKill(fxSpawn('fx-glow', c, r, 10.5 * sc), 840);
+    fxKill(fxSpawn('fx-fireball', c, r, 7.6 * sc), 780);
+    sparks(kind === 'mech' ? 7 : 6, false);
+    smoke(3, 5.6 * sc);
+    decal('fx-scorch', 7.4 * sc, 5800);
+  }
+  if (REDUCED_MOTION){
+    /* No fall, spin or shake: a brief static flash plus the decal. */
+    ghost('fadeout', 380);
+    fxKill(fxSpawn('fx-deathflash', c, r, Math.max(3.4, 5.2 * sc)), 440);
+    if (kind === 'infantry' || kind === 'cmd') decal('fx-splat', 5.6, 4800);
+    else if (kind !== 'drone') decal('fx-scorch', 6.8 * sc, 5800);
+    return;
+  }
+  if (kind === 'vehicle'){
+    ghost('consumed', 660);
+    fireballSet();
+    fxKill(fxSpawn('fx-puff', c, r, Math.max(5, d.w)), 680);
+  } else if (kind === 'structure' || kind === 'turret'){
+    /* The crumble (and garrison return) is unchanged; it now opens
+       with a fireball burst and smoke, and a killed ruin turret
+       leaves its ruin scorched via the same scorch decal. */
+    var cg = ghost('crumble', 1500);
+    cg.style.animationDelay = '0.16s';
+    fireballSet();
+    fxKill(fxSpawn('fx-puff', c, r, Math.max(5, d.w)), 680);
+  } else if (kind === 'copter'){
+    /* Dies in the air: drops from flight height trailing smoke with
+       a slight spin, and fireballs when it hits the ground. */
+    ghost('falling', 640);
+    for (var ti = 0; ti < 3; ti++){
+      (function(k){ setTimeout(function(){ if (fxLayerEl) fxKill(fxSpawn('fx-puff', c, r, 3.4 + k * 0.7), 620); }, 110 * k); })(ti);
+    }
+    setTimeout(function(){ if (fxLayerEl) fireballSet(); }, 480);
+  } else if (kind === 'mech'){
+    ghost('consumed', 660);
+    fxKill(fxSpawn('fx-glow', c, r, 7.6), 840);
+    fxKill(fxSpawn('fx-fireball', c, r, 4.9), 780);
+    sparks(7, false);
+    smoke(1, 4.2);
+    decal('fx-splat', 4.6, 4800);
+    decal('fx-scorch', 5.2, 5800);
+  } else if (kind === 'cmd'){
+    /* Wren goes down (her downed/return flow is unchanged): a fast
+       drop under her splat, plus sparks as the suit powers down. */
+    ghost('drop', 480);
+    sparks(5, true);
+    fxKill(fxSpawn('fx-burst', c, r, 3.6), 340);
+    decal('fx-splat', 5.6, 4800);
+    fxKill(fxSpawn('fx-puff', c, r, Math.max(4.4, d.w * 0.8)), 680);
+  } else if (kind === 'drone'){
+    ghost('popfall', 500);
+    sparks(4, true);
+    fxKill(fxSpawn('fx-burst', c, r, 2.7), 340);
+    fxKill(fxSpawn('fx-puff', c, r, 3.2), 680);
+  } else {
+    /* Infantry: no fireball — a fast drop where they stand under a
+       spreading dark red splat, with a small dust puff. */
+    ghost('drop', 480);
+    decal('fx-splat', 5.6, 4800);
+    fxKill(fxSpawn('fx-puff', c, r, Math.max(4.4, d.w * 0.8)), 680);
+  }
+}
 function shakeBoard(amp, dur){
   if (!boardEl || REDUCED_MOTION) return;
   boardEl.classList.remove('shaking');
@@ -1007,13 +1168,7 @@ function flushFx(){
     var bSize = ev.killed ? 6.4 : ev.dmg >= 6 ? 5.2 : ev.dmg >= 3 ? 4.2 : 3.2;
     fxKill(fxSpawn('fx-burst', ev.d.c, ev.d.r, bSize), 320);
     if (ev.killed){
-      var gh = fxSpawn('fx-ghost', ev.d.c, ev.d.r, ev.d.w);
-      gh.innerHTML = '<img src="' + ev.d.spr + '" alt="">';
-      if (REDUCED_MOTION) gh.classList.add('fadeout');
-      else if (ev.d.tower) gh.classList.add('crumble');
-      else { gh.classList.add('topple'); gh.style.setProperty('--dir', (ev.d.c >= ev.a.c ? 82 : -82) + 'deg'); }
-      fxKill(gh, REDUCED_MOTION ? 380 : 1150);
-      fxKill(fxSpawn('fx-puff', ev.d.c, ev.d.r, Math.max(5, ev.d.w)), 680);
+      spawnDeathFx(ev);
     } else if (!REDUCED_MOTION){
       var dEl = document.querySelector('.piece[data-uid="' + ev.d.id + '"]');
       if (dEl){
@@ -1036,14 +1191,14 @@ function doAttack(att, def){
   var aSnap = fxSnap(att), dSnap = fxSnap(def);
   var impDelay = sfxWeapon(att, 1);
   var killed = applyDamage(att, def, dmg);
-  sfxImpact(dmg, killed, impDelay, !!(effType(att).indirect || effType(att).siege));
+  sfxImpact(dmg, killed, impDelay, !!(effType(att).indirect || effType(att).siege), deathKindOf(dSnap), deathScaleOf(dSnap), att.side === 'E' ? 0.65 : 1);
   queueShotFx(aSnap, dSnap, dmg, killed, impDelay, false);
   log(effType(att).name + ' (' + sideName(att.side) + ') hits ' + effType(def).name + ' for ' + dmg + (fc.surround ? ' (surround x' + fc.surround + ')' : '') + '.');
   if (att.type === 'siege'){
     var ns = neighbors(def.c, def.r);
     for (var i = 0; i < ns.length; i++){
       var o = unitAt(ns[i][0], ns[i][1]);
-      if (o && o.side !== att.side && o.id !== def.id){ var oSnap = fxSnap(o); var sdmg = Math.max(1, Math.round(dmg / 2)); var sKilled = applyDamage(att, o, sdmg); queueShotFx(aSnap, oSnap, sdmg, sKilled, impDelay + 0.08, true); if (sKilled) sfxImpact(4, true, impDelay + 0.08, true); log('Siege splash catches ' + effType(o).name + '.'); }
+      if (o && o.side !== att.side && o.id !== def.id){ var oSnap = fxSnap(o); var sdmg = Math.max(1, Math.round(dmg / 2)); var sKilled = applyDamage(att, o, sdmg); queueShotFx(aSnap, oSnap, sdmg, sKilled, impDelay + 0.08, true); if (sKilled) sfxImpact(4, true, impDelay + 0.08, true, deathKindOf(oSnap), deathScaleOf(oSnap), att.side === 'E' ? 0.65 : 1); log('Siege splash catches ' + effType(o).name + '.'); }
     }
   }
   att.acted = true; att.moved = true;
@@ -1055,8 +1210,8 @@ function doAttack(att, def){
     if (def.tower) def.fired = true;   // answering fire spends the tower's shot
     var cDelay = sfxWeapon(def, 0.65);   // the defender answers with its own weapon's voice
     var cKilled = applyDamage(def, att, cdmg, true);
-    sfxImpact(cdmg, cKilled, cDelay, !!(effType(def).indirect || effType(def).siege));
-    queueShotFx(dSnap, aSnap, cdmg, cKilled, cDelay, false);   // counter kills topple the attacker the same way
+    sfxImpact(cdmg, cKilled, cDelay, !!(effType(def).indirect || effType(def).siege), deathKindOf(aSnap), deathScaleOf(aSnap), 0.65);
+    queueShotFx(dSnap, aSnap, cdmg, cKilled, cDelay, false);   // counter kills get the same death treatment
     def.xp += 1;
   }
   checkWin();
@@ -1912,7 +2067,7 @@ function turretPhase(){
     var tSnapA = fxSnap(tur), tSnapD = fxSnap(best);
     var tDelay = sfxWeapon(tur, 0.9);
     var tKilled = applyDamage(tur, best, dmg);
-    sfxImpact(dmg, tKilled, tDelay, false);
+    sfxImpact(dmg, tKilled, tDelay, false, deathKindOf(tSnapD), deathScaleOf(tSnapD), 0.9);
     queueShotFx(tSnapA, tSnapD, dmg, tKilled, tDelay, false);
   }
 }
@@ -2218,6 +2373,7 @@ function loadGame(){
 /* ---------------- Audio: ambient session, procedural synth ---------------- */
 var AU = { ctx: null, master: null, musicBus: null, sfxBus: null, sfxComp: null, seqTimer: null, step: 0, nextTime: 0,
   noiseBuf: null, gritCurve: null, shots: {}, travels: {}, lastTravel: null, lastWeapon: null,
+  nodes: 0, kills: {}, lastKill: null, lastKillNodes: 0,
   vol: { master: 0.8, music: 0.6, sfx: 0.8 } };
 try {
   var savedVol = JSON.parse(localStorage.getItem('xenofront-diorama-audio-v1') || 'null');
@@ -2360,6 +2516,7 @@ function auGrit(){
 }
 function wNoise(t0, dur, o){
   if (!AU.ctx) return;
+  AU.nodes += 3 + (o.grit ? 1 : 0) + (o.echo ? 3 : 0);
   var nodes = [];
   var src = AU.ctx.createBufferSource(); src.buffer = auNoiseBuffer(); src.loop = true;
   src.playbackRate.value = o.rate || 1;
@@ -2386,6 +2543,7 @@ function wNoise(t0, dur, o){
 }
 function wTone(t0, dur, o){
   if (!AU.ctx) return;
+  AU.nodes += 2 + (o.grit ? 1 : 0);
   var osc = AU.ctx.createOscillator(), g = AU.ctx.createGain();
   osc.type = o.type || 'sine';
   osc.frequency.setValueAtTime(o.f0, t0);
@@ -2618,23 +2776,72 @@ function sfxWeapon(att, vol){
   wNoise(t, 0.16, { f0: 1200, f1: 250, gain: 0.18 * V, grit: true });
   return 0.12;
 }
+/* The dedicated kill explosion: a layered boom quite distinct from
+   an ordinary impact — low sub thump and gritty blast up front, then
+   a crackle-and-debris tail that settles over the following second.
+   Scaled by the victim's class (AU.kills counts invocations per
+   kind and AU.lastKillNodes records the stub-graph size, both for
+   dev assertion): vehicles and structures get the full stack, the
+   mech a mid stack, the copter a falling whistle into its impact
+   boom, Wren a dull thud with power-down spark crackle, infantry a
+   quiet dull thud, and the drone a small electric zap-pop. Routed
+   through the same SFX bus and compressor as every weapon voice;
+   CPU-caused kills pass the usual reduced volume. */
+function sfxKillExplosion(kind, sc, delay, vol){
+  audioInit();
+  if (!AU.ctx) return;
+  if (!AU.kills) AU.kills = {};
+  AU.kills[kind] = (AU.kills[kind] || 0) + 1;
+  AU.lastKill = kind;
+  var before = AU.nodes || 0;
+  var t = AU.ctx.currentTime + (delay || 0.1);
+  var V = (vol == null ? 1 : vol), R = 0.95 + Math.random() * 0.1, i, s = sc || 1;
+  if (kind === 'infantry'){
+    wTone(t, 0.22, { f0: 120, f1: 45, gain: 0.20 * V });
+    wNoise(t, 0.14, { f0: 700, f1: 200, gain: 0.10 * V });
+  } else if (kind === 'drone'){
+    wTone(t, 0.16, { type: 'square', f0: 1500, f1: 220, gain: 0.14 * V });
+    wNoise(t, 0.10, { ft: 'highpass', f0: 2600, gain: 0.10 * V });
+    wTone(t + 0.05, 0.10, { type: 'sawtooth', f0: 800, f1: 140, gain: 0.07 * V });
+  } else if (kind === 'cmd'){
+    wTone(t, 0.24, { f0: 110, f1: 42, gain: 0.22 * V });
+    wNoise(t, 0.16, { f0: 800, f1: 220, gain: 0.12 * V });
+    for (i = 0; i < 3; i++) wNoise(t + 0.03 + i * 0.07, 0.05, { ft: 'bandpass', f0: (2400 - i * 500) * R, q: 4, gain: 0.09 * V });
+  } else if (kind === 'mech'){
+    wNoise(t, 0.42, { f0: 1900, f1: 140, gain: 0.34 * V, grit: true });
+    wTone(t, 0.46, { f0: 95, f1: 28, gain: 0.32 * V });
+    wNoise(t + 0.05, 0.10, { ft: 'highpass', f0: 3200, gain: 0.08 * V });
+    for (i = 0; i < 4; i++) wNoise(t + 0.14 + i * 0.11, 0.08, { ft: 'bandpass', f0: (1700 - i * 260) * R, q: 3, gain: 0.11 * V });
+  } else {
+    /* vehicle, copter, structure, turret: the full layered boom */
+    if (kind === 'copter'){
+      wTone(t, 0.46, { type: 'sine', f0: 1350 * R, f1: 300 * R, gain: 0.07 * V, atk: 0.06 });
+      t += 0.46;
+    }
+    var boom = 0.50 * (0.7 + 0.3 * s) * V;
+    wNoise(t, 0.85, { f0: 2600, f1: 90, gain: boom, grit: true, echo: 0.20 });
+    wTone(t, 0.90, { f0: 105, f1: 24, gain: boom });
+    wNoise(t, 0.07, { ft: 'highpass', f0: 3800, gain: 0.14 * V });
+    for (i = 0; i < 6; i++){
+      wNoise(t + 0.16 + i * 0.12 + Math.random() * 0.04, 0.09, { ft: 'bandpass', f0: (1600 - i * 200) * R, q: 2.5, gain: (0.15 - i * 0.018) * V });
+    }
+    wNoise(t + 0.30, 0.50, { f0: 500, f1: 120, gain: 0.10 * V });
+  }
+  AU.lastKillNodes = (AU.nodes || 0) - before;
+}
 /* The hit itself, scaled by damage dealt. boomAlready: indirect
    weapons (artillery, rockets, siege) carry their own landing boom
    in the weapon routine, so the impact adds crunch and debris
    rather than a second explosion — except a kill, which always
-   gets the full destruction treatment with a falling debris tail. */
-function sfxImpact(dmg, killed, delay, boomAlready){
+   routes to the dedicated sfxKillExplosion for the victim's class. */
+function sfxImpact(dmg, killed, delay, boomAlready, killKind, killScale, killVol){
   audioInit();
   if (!AU.ctx) return;
   var t = AU.ctx.currentTime + (delay || 0.1);
   var R = 0.95 + Math.random() * 0.1, i;
   AU.shots.impact = (AU.shots.impact || 0) + 1;
   if (killed){
-    wNoise(t, 0.70, { f0: 2600, f1: 120, gain: 0.48, grit: true, echo: 0.22 });
-    wTone(t, 0.80, { f0: 110, f1: 26, gain: 0.48 });
-    for (i = 0; i < 5; i++){
-      wNoise(t + 0.18 + i * 0.13 + Math.random() * 0.05, 0.09, { ft: 'bandpass', f0: (1500 - i * 220) * R, q: 2.5, gain: 0.15 - i * 0.02 });
-    }
+    sfxKillExplosion(killKind || 'vehicle', killScale || 1, delay, killVol);
     return;
   }
   if (dmg >= 6){
