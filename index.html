@@ -52,8 +52,12 @@ h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0}
 #menuBtn{pointer-events:auto;font-size:1.05rem;line-height:1;padding:.55rem .8rem;background:rgba(22,31,42,.86);color:#eef5f9;border-color:rgba(110,205,240,.4);border-radius:999px;box-shadow:var(--shadow);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #endTurnBtn{pointer-events:auto;font-size:.98rem;padding:.55rem 1.05rem;white-space:nowrap;border-radius:999px;box-shadow:var(--shadow)}
 #endTurnBtn.confirm{background:var(--bad);border-color:var(--bad);color:#fff}
+#jumpReadyBtn{pointer-events:auto;display:inline-flex;align-items:center;gap:5px;font-size:.98rem;font-weight:800;line-height:1;padding:.55rem .8rem;white-space:nowrap;background:rgba(22,31,42,.9);color:#eef5f9;border:1px solid rgba(110,205,240,.55);border-radius:999px;box-shadow:var(--shadow);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);cursor:pointer}
+#jumpReadyBtn svg{width:19px;height:19px;stroke:#4fdcff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+#jumpReadyBtn b{color:#4fdcff;font-size:.98rem}
+#jumpReadyBtn:active{transform:scale(.95)}
 @media (max-width:900px){ #hudCmdr{display:none} }
-@media (max-width:560px){ .chip{font-size:.78rem;padding:.3rem .55rem} #hudSide{display:none} #endTurnBtn{padding:.5rem .75rem;font-size:.92rem} footer.site{white-space:normal;font-size:.62rem;line-height:1.25} }
+@media (max-width:560px){ .chip{font-size:.78rem;padding:.3rem .55rem} #hudSide{display:none} #endTurnBtn{padding:.5rem .75rem;font-size:.92rem} #jumpReadyBtn{padding:.5rem .6rem;font-size:.92rem} #jumpReadyBtn svg{width:17px;height:17px} footer.site{white-space:normal;font-size:.62rem;line-height:1.25} }
 .board img.plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .board svg.layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .piece{position:absolute;transform:translate(-50%,-50%);pointer-events:none;text-align:center;transition:left .35s ease,top .35s ease}
@@ -230,6 +234,14 @@ footer.site{color:rgba(210,235,245,.88)}
 @media (max-width:560px){
   footer.site{white-space:normal;overflow:visible;text-overflow:clip;font-size:.62rem;line-height:1.25}
 }
+/* Phone widths: while the jump-to-ready control is up, the top HUD
+   row cannot fit the chips plus Menu, Jump and the wide warning End
+   Turn side by side — the button group wraps to its own row over
+   the map top instead of sliding across the chips. Only while the
+   jump control is visible; the resting HUD is unchanged. */
+@media (max-width:560px){
+  .hud:has(#jumpReadyBtn:not(.hidden)){flex-wrap:wrap;row-gap:6px}
+}
 /* ---- Combat FX: muzzle flash, tracer, impact burst, debris puff,
    explosion-death treatments (fireball, glow, smoke, sparks, scorch
    and splat decals, consumed/falling ghosts — nothing topples),
@@ -331,6 +343,7 @@ footer.site{color:rgba(210,235,245,.88)}
     </div>
     <div class="hud-right">
       <button id="menuBtn" type="button" aria-label="Open menu" aria-haspopup="true">☰</button>
+      <button id="jumpReadyBtn" type="button" class="hidden" aria-label="Jump to the next unit that can still act" title="Jump to the next unit that can still act"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="1.3" fill="#4fdcff" stroke="none"/></svg><b id="jumpReadyCount">0</b></button>
       <button id="endTurnBtn" type="button" class="primary">End turn</button>
     </div>
   </div>
@@ -434,6 +447,7 @@ footer.site{color:rgba(210,235,245,.88)}
    diorama sheets (board plate + blue/red miniature sheets + property
    sheet). Nothing on the table is drawn or vector-substituted. */
 var DEVLOG = [
+ 'Jump to ready units from the end-turn warning. Tapping End Turn while blue units can still act now also raises a companion control beside End Turn in the top-right HUD: a crosshair icon with the count of units that can still act (the number lives in the HUD chrome; the board itself stays wordless). Tapping it jumps to the next ready unit — the camera pans smoothly (about 300ms, through the usual clamped animateViewTo) to centre the unit in the map area, and the unit is selected exactly as if tapped (standard select sound, move range and action cluster available), so it can be ordered immediately; repeated taps cycle through every ready unit in the game\u2019s unit order and wrap back to the first after the last. One shared predicate (readyUnits: blue, not acted, not downed — a unit that has only moved counts, exactly as the warning always counted it) drives the warning, the count on the button and the jump cycle, so the three can never disagree. Jumping cancels the armed end-turn confirmation, clearing its timer and returning the button to plain End Turn, so ending the turn afterwards re-evaluates fresh and warns again if units remain; the jump control stays up while ready units remain on the player\u2019s turn so cycling can continue, its count refreshing on every render, and it disappears the moment no unit can act, the turn ends, or the battle does. Tapping End Turn a second time while the warning is armed still ends the turn immediately, exactly as before; with no units able to act there is no warning and no jump control. Fog and selection rules are untouched — these are the player\u2019s own units. No gameplay numbers, save format or footer changes. One pre-existing travel-animation bug the verification harness exposed is fixed in passing: a requestAnimationFrame timestamp can precede the travel\u2019s start time by a frame, which made the first-frame interpolation index negative and threw, soft-locking a CPU turn; elapsed time in the travel frame is now clamped at zero.',
  'Explosion deaths — the topple is gone. No unit rotates or falls over sideways as its death anymore, on any death path (direct kills, counterattacks, siege splash, tower and ruin-turret kills). Deaths now speak the reference game\'s explosion language, scaled to a one-kill-at-a-time table: ground vehicles die in a round fireball — bright yellow-white core, orange edge — with debris sparks thrown outward, the miniature consumed by the burst (white-hot flash and fade inside it), a warm glow lighting its hex during the flash, a grey-brown smoke plume that rises and drifts for two to three seconds, and a dark scorch mark left on the hex fading over the following seconds. Size scales with the machine: Siege and Medium Tank biggest, Tank, Artillery and Rockets mid, Anti-Air smaller, Recon and APC smallest. The Battle Copter dies in the air: it drops from flight height trailing smoke with a slight spin and fireballs on impact, then plume and scorch as above. The Mech gets a mid-size spark-and-flame burst and leaves a splat-and-scorch mark. Infantry and Commander Wren get no fireball: they drop fast where they stand under a spreading dark red splat decal with a small dust puff; Wren adds a short electric spark burst as her suit powers down, and her downed-and-return flow is unchanged. The scout drone pops electrically and falls, no fireball, no splat. Towers and the ruin turret now open their existing crumble with a fireball burst and smoke; a killed turret leaves the ruin scorched. Sound gains a dedicated layered kill explosion on the same SFX bus and compressor — a low boom plus a crackle-and-debris tail, scaled by class (vehicles and structures biggest, Mech mid, the copter adds a falling whistle into its impact boom, infantry a quiet dull thud, Wren a thud with power-down sparks, the drone a small electric zap-pop), CPU kills at the usual reduced volume. Damage-scaled shake, hit-stop, damage numbers and pips, kill counts and credits, fog (hidden deaths stay hidden exactly as combat FX handled them), the save format, travel and the wordless board are all untouched; smoke and decals linger passively after input returns, inside the same combat FX envelope as before. Reduced motion: no fall, spin or shake — a brief static flash plus the splat/scorch decal, kill sound unchanged.',
  'Permanent status bar + dual-contrast hex outlines. (1) LAYOUT: the floating readout card is gone as an overlay. The shell is now a stacked column — the map viewport fills exactly the space above a permanent bottom stack, and the status bar (the same slate-glass terrain + unit readout) lives in that stack in normal layout flow, always present and sized to its content, with the byte-exact copyright footer as its own slim line directly beneath it, fully readable and never ellipsized on wide screens (still wraps on narrow ones). Nothing of the map can render underneath the bar, so bottom-row hexes and units are always fully visible and tappable. The dismiss ✕ and the chevron collapse are removed; the bar content updates in place exactly as the card did, with the same resting text at battle start, two columns on wide screens and stacked rows in the same bar on narrow portrait. All world math already keyed off the board element size, so cover scale, zoom, pan clamping and the blue-army opening anchor now derive from the real map area (viewport minus the bottom stack); a ResizeObserver on the stack re-runs the layout whenever the bar changes height. The old auto-frame that shoved inspected hexes clear of the floating card is replaced by a gentle keep-inside-the-viewport framing. The top HUD still floats over the maps top; gameplay, travel, FX, fog, menus, audio and save v4 are untouched. (2) OUTLINES: contextual hex strokes are now dual-contrast — a wider warm near-black under-stroke with the colored stroke on top — in both the highlight layer (move range, Wren aura, target and forecast hexes, the selected hex, capture flashes; the gold move stroke also goes 1.5 to 1.8 wide and a touch stronger) and the owner outlines (blue, red and the faint neutral parchment, which vanished on bright grass before). The gold identity and the fills are unchanged and no permanent grid appears; the outlines simply carry their own contrast against sunlit grass, dirt and dark forest alike.',
  'Export-readiness pass — image plumbing only, no gameplay, visual or audio change. All 39 miniature and property sprites are now baked into this file itself as WebP data URIs (max 384px, quality 88, at least 2x their largest on-screen size — the same treatment the published Pages copy already used) in a SPRITES lookup keyed by the original asset filename. spriteFor, the property and tower renderers, the factory build menu icons and the Commander Wren intro card all read from that lookup instead of building file paths by string concatenation, which the single-file exporter could not resolve (it reported the concatenated prefixes as unresolved assets). The board plate stays a normal asset reference, which the exporter inlines as before. The travel animation and travel sounds, the wordless board, the save format and keys, and the byte-exact footer are untouched. The page title is now simply Xenofront, matching the published page. Result: the export produces one complete, fully playable HTML file with zero unresolved assets and no image 404s, with or without an assets folder beside it.',
@@ -829,7 +843,7 @@ function animateTravel(u, fromC, fromR, toC, toR, path, isCPU, onDone){
   else waypoints = path.map(function(p){ return [hexCX(p[0], p[1]), hexCY(p[1])]; });
   var startT = performance.now(), lastStep = 0;
   function frame(now){
-    var elapsed = now - startT, k = Math.min(1, elapsed / dur);
+    var elapsed = Math.max(0, now - startT), k = Math.min(1, elapsed / dur);
     var segFloat = k * (waypoints.length - 1);
     var segIdx = Math.min(waypoints.length - 2, Math.floor(segFloat));
     var segK = k >= 1 ? 1 : segFloat - segIdx;
@@ -1284,6 +1298,7 @@ function render(){
   document.getElementById('hudTurn').textContent = G.turn;
   document.getElementById('hudCmdr').textContent = G.cmdrDown.P > 0 ? 'Wren downed (' + G.cmdrDown.P + ')' : WREN.name + ' · ' + WREN.title + ' · Drones ' + droneCount('P') + '/' + DRONE_CAP;
   document.getElementById('endTurnBtn').disabled = G.side !== 'P' || busy;
+  updateJumpBtn();
   var sideEl = document.getElementById('hudSide');
   if (sideEl) sideEl.textContent = G.over ? 'Battle over' : (G.side === 'P' ? 'Blue to move' : 'Red moving…');
   updateObjectives();
@@ -2115,19 +2130,77 @@ function beginSideTurn(side){
   computeFog();
 }
 var endConfirmUntil = 0;
+var endWarnTimer = null, jumpWarnActive = false, jumpLastId = null;
+/* The ONE readiness predicate behind both the end-turn warning and
+   the jump-to-ready-unit control: a blue unit that has not acted and
+   is not downed (a unit that has only moved still counts, exactly as
+   the warning has always counted it). Warning count, jump-button
+   count and the jump cycle all derive from this single list, in the
+   game's unit order, so they can never disagree. */
+function readyUnits(){
+  if (!G) return [];
+  return G.units.filter(function(u){ return u.side === 'P' && !u.acted && !u.downed; });
+}
+function updateJumpBtn(){
+  var b = document.getElementById('jumpReadyBtn');
+  if (!b) return;
+  var list = (jumpWarnActive && G && G.side === 'P' && !G.over) ? readyUnits() : [];
+  if (!list.length){
+    if (jumpWarnActive && (!G || G.side !== 'P' || G.over || !readyUnits().length)){ jumpWarnActive = false; jumpLastId = null; }
+    b.classList.add('hidden');
+    return;
+  }
+  document.getElementById('jumpReadyCount').textContent = list.length;
+  b.disabled = busy;
+  b.classList.remove('hidden');
+}
+function clearEndConfirm(){
+  endConfirmUntil = 0;
+  if (endWarnTimer){ clearTimeout(endWarnTimer); endWarnTimer = null; }
+  var b = document.getElementById('endTurnBtn');
+  b.textContent = 'End turn'; b.classList.remove('confirm');
+}
+/* Jump to the next unit that can still act: centre it in the map
+   area with the usual clamped smooth pan and select it exactly as a
+   tap would (selectUnit plays the standard select sound and shows
+   its move range / action cluster), so it can be ordered at once.
+   Repeated taps cycle the ready list in unit order, wrapping after
+   the last. Jumping cancels the armed end-turn confirm — the player
+   has chosen to keep acting — so a later End Turn press re-evaluates
+   fresh; the jump control itself stays up while ready units remain
+   so the player can keep cycling. */
+function jumpToReadyUnit(){
+  if (!G || G.side !== 'P' || G.over || busy) return;
+  var list = readyUnits();
+  if (!list.length){ jumpWarnActive = false; jumpLastId = null; updateJumpBtn(); return; }
+  var idx = -1;
+  for (var i = 0; i < list.length; i++) if (list[i].id === jumpLastId) idx = i;
+  var u = list[(idx + 1) % list.length];
+  jumpLastId = u.id;
+  clearEndConfirm();
+  selectUnit(u);
+  describeHex(u.c, u.r);
+  var tx = boardEl.clientWidth / 2 - hexCX(u.c, u.r) / BW * view.w;
+  var ty = boardEl.clientHeight / 2 - hexCY(u.r) / BH * view.h;
+  animateViewTo(tx, ty, 300);
+  updateJumpBtn();
+}
 function endPlayerTurn(){
   if (busy || G.side !== 'P' || G.over) return;
-  var canAct = G.units.some(function(u){ return u.side === 'P' && !u.acted && !u.downed; });
+  var canAct = readyUnits().length > 0;
   var now = Date.now();
   if (canAct && now > endConfirmUntil){
     endConfirmUntil = now + 3000;
+    jumpWarnActive = true; jumpLastId = null;
     var b = document.getElementById('endTurnBtn');
     b.textContent = 'Units can still act — end anyway?'; b.classList.add('confirm');
-    setTimeout(function(){ b.textContent = 'End turn'; b.classList.remove('confirm'); }, 3000);
+    if (endWarnTimer) clearTimeout(endWarnTimer);
+    endWarnTimer = setTimeout(function(){ endWarnTimer = null; endConfirmUntil = 0; b.textContent = 'End turn'; b.classList.remove('confirm'); }, 3000);
+    updateJumpBtn();
     return;
   }
-  document.getElementById('endTurnBtn').textContent = 'End turn';
-  document.getElementById('endTurnBtn').classList.remove('confirm');
+  clearEndConfirm();
+  jumpWarnActive = false; jumpLastId = null; updateJumpBtn();
   selUnit = null; selTower = null; moveSet = {}; pendingForecast = null; preMove = null;
   document.getElementById('factoryCard').classList.add('hidden');
   turretPhase();
@@ -3066,6 +3139,7 @@ function init(){
     if (h) boardTap(h[0], h[1]);
   });
   document.getElementById('endTurnBtn').addEventListener('click', endPlayerTurn);
+  document.getElementById('jumpReadyBtn').addEventListener('click', function(ev){ ev.stopPropagation(); jumpToReadyUnit(); });
   document.getElementById('newGameBtn').addEventListener('click', function(){
     try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
     document.getElementById('endOverlay').classList.add('hidden');
