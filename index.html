@@ -95,17 +95,23 @@ h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0}
    terrain piece, unpowered — windows dim, the sculpted ground pad
    (baked into the sprite) greys with the building. The pooled shadow
    is a separate element and stays. Full color = somebody's, grey =
-   nobody's, hex outline color = whose. Owner state drives this in
+   nobody's, pad-rim tint color = whose. Owner state drives this in
    renderProps, so a completed capture re-renders in full color in the
-   same pass that flips the outline. */
+   same pass that flips the rim. */
 .prop.neutral img{filter:drop-shadow(0 4px 4px rgba(20,12,2,.5)) saturate(.13) brightness(.99) contrast(.97)}
 .prop .owntag{display:inline-block;position:relative;margin-top:-13px;z-index:2;font-size:.56rem;font-weight:700;color:#fff;text-shadow:0 1px 2px #000;padding:0 4px;border-radius:3px;background:rgba(20,12,2,.55)}
 .prop .owntag.P{background:rgba(38,84,140,.8)} .prop .owntag.E{background:rgba(160,50,28,.8)}
-/* Ownership is drawn as a subtle hexagonal outline in the #ownerSvg
-   board layer (see renderProps), following each territory's own hex —
-   no circular rings remain on properties. #ownerSvg sits ABOVE the
-   property sprites so the complete hexagon stays legible even where a
-   tall sprite crosses its upper edges. */
+/* Ownership rides on the miniature, never on a hex outline: the
+   sculpted pad's rim is tinted in the owner's color (padRimHtml in
+   renderProps sets the color inline; blue, red, or plain stone for
+   neutral). The rim is an ellipse seated on the pad's base edge,
+   feathered at its outer edge, and a soft ground-blend wash under
+   the pad (.padblend) works the surrounding ground tone into the
+   pad's outer edge so no hard pad edge hovers over the plate. The
+   pooled contact shadow (.aosh, below) seats the whole pad IN the
+   terrain, leaning down-right like every shadow on the table. */
+.prop .padblend,.piece.towerp .padblend{position:absolute;left:50%;bottom:-6%;transform:translate(-44%,10%);width:128%;height:36%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(24,17,7,.34) 0%,rgba(24,17,7,.16) 52%,rgba(24,17,7,0) 74%);filter:blur(2px);pointer-events:none}
+.prop .padrim,.piece.towerp .padrim{position:absolute;left:50%;bottom:0;transform:translate(-46%,6%);width:104%;height:31%;border-radius:50%;border:3px solid rgba(206,192,158,.55);box-shadow:0 1px 3px rgba(20,12,2,.35),inset 0 0 6px rgba(20,12,2,.18);pointer-events:none;z-index:0}
 /* Pooled ambient-occlusion ground shadow: seats every property and
    tower into the terrain — wider, softer and warmer-dark than a unit's
    contact shadow, feathered out at the edges. */
@@ -249,13 +255,13 @@ footer.site{position:relative;text-align:center;color:rgba(240,226,196,.88);font
 .piece.doomed>.hpbar i.on{animation:doomPulse .6s ease-in-out infinite;background:#e2483a}
 @media (prefers-reduced-motion: reduce){.piece.doomed .hpbar i.ghost,.piece.doomed>.hpbar i.on{animation:none}}
 .piece.deployed::after{content:'';display:block;width:70%;height:5px;margin:0 auto;border-radius:50%;background:rgba(15,9,2,.55);box-shadow:0 0 4px rgba(0,0,0,.5)}
-/* ---- Towers: manned lights, dormant dim (owner hex outline in #ownerSvg) ---- */
+/* ---- Towers: manned lights, dormant dim (ownership = pad-rim tint) ---- */
 .piece.towerp img{filter:drop-shadow(0 4px 4px rgba(20,12,2,.5))}
 .piece.towerp.manned img{filter:drop-shadow(0 4px 4px rgba(20,12,2,.5)) drop-shadow(0 0 7px rgba(80,220,255,.65)) saturate(1.15)}
 .piece.towerp.manned.eside img{filter:drop-shadow(0 4px 4px rgba(20,12,2,.5)) drop-shadow(0 0 7px rgba(255,110,45,.7)) saturate(1.15)}
 .piece.towerp.dormant img{filter:brightness(.58) saturate(.5) drop-shadow(0 4px 4px rgba(20,12,2,.5))}
-/* Tower ownership uses the same subtle hex outline in #ownerSvg as
-   properties: manned renders slightly stronger, dormant dimmer. */
+/* Tower ownership rides on the pad rim like every property's:
+   the rim tint in the owner's color, no hex outline. */
 /* ---- Slate glass chrome theme (Matthew's pick from three mockups):
    dark slate-grey frosted glass panels, bright cyan accent lines and
    icons, clean white primary text, muted slate secondary text. It
@@ -595,12 +601,13 @@ footer.site{color:rgba(210,235,245,.88)}
     <p><b>Win three ways:</b> capture the enemy HQ, rout every enemy unit (artifacts are captured structures, not units — an army whose last unit falls loses even while it holds one), or capture the central relay and hold it for 3 of your turns — that third way belongs to the Terra table; the other boards are won by HQ capture or rout.</p>
     <p><b>Boards:</b> six tables, chosen from the board picker on the start screen or the Boards list in the menu's Game section. Board 1 is the introductory Terra table, weighted a little toward Blue. Twin Bays adds water — impassable to vehicles and waded slowly by infantry — with bridges for everything else. Pinewall is the forest-and-mountain fog table, a town holding its central pass. Mare Dust is Luna: crater fields give forest cover and hiding, highlands stand in for hills, and neither army fields a copter in the thin air. The Belt is deep space: every unit is a ship, asteroid fields hide and cover like forest, dense clusters block movement and sight entirely, and stations — a Command Station, Docks and Habitats — replace towns, with a Monolith Array and a Levitating Gyre waiting in screened pockets at the top edge. First Contact is an alien world: spore groves hide and cover like forest, crystal highlands stand in for hills, acid pools bar every vehicle — and the red army there is a living alien brood (Skitters, Burrowers, Stalkers, a Behemoth, Spitters and Shriekers) hatched from a Broodmother Hive under a Hive Heart, with a Biolume Spire and a Monolith Array waiting in screened pockets at the top edge. It is a first-contact preview: alien stats mirror the human classes they match, so the engine and balance stay stable; unique alien abilities — burrowing, swarming and the like — are future campaign design and are not in this pass.</p>
     <p><b>Surround and support:</b> each of your units standing beside the target beyond the first adds about +10% damage and blunts the counterattack. When a strike is armed, each supporting unit shows a gold marker, the target's outline deepens, and the damage ghost on the target's bar turns gold while the surround bonus is boosting the shot; a target whose whole bar pulses is about to be destroyed. The mirror rule defends: every friendly unit standing beside a unit that is attacked — drones, towers and held artifacts count, and towers and artifacts can themselves be supported — cuts the damage it takes by 10%, up to 50% for five allies, though a hit that deals damage at all still deals at least 1. Support blunts counterattacks too: when a defender strikes back, the original attacker's own neighbours support it the same way. In the forecast, the segments a defender is spared by support show as pale steel segments, distinct from the red damage ghost and the gold surround portion.</p>
-    <p><b>Movement and terrain:</b> roads, bridges and property hexes are fast for everyone (1). Open ground costs wheels 2, so vehicles range farthest along roads; forest costs foot 1, tracked 2, wheels 3; hills cost foot and tracked 2, wheels 3. Vehicles can never enter water — bridges are their only crossing — while infantry types wade through at cost 3 and may end a move there. Battle Copters fly at cost 1 over everything except hills and mountains, which they cannot cross or land on at all; drones fly high and cross anything at cost 1.</p>
+    <p><b>Movement and terrain:</b> roads, bridges and property hexes are fast for everyone (1). Open ground costs wheels 2, so vehicles range farthest along roads; forest costs foot 1, tracked 2, wheels 3; hills cost foot and tracked 2, wheels 3. Vehicles can never enter water — bridges are their only crossing — while infantry types wade through at cost 3 and may end a move there. Battle Copters fly at cost 1 over everything except hills and mountains, which they cannot cross or land on at all; drones fly high and cross anything at cost 1. Tap any hex to inspect it: the readout lists that hex's terrain values — its defense stars and percentage, the movement cost for foot, wheeled, tracked, low-air and high-air units (or Impassable), and its special rules — alongside whatever stands on it; a hex the fog has never scouted shows nothing until it is explored.</p>
+    <p><b>Range preview:</b> selecting one of your units — or inspecting a visible enemy, a manned tower or a held artifact — previews its reach on the table: the brighter band is what it can hit from the hex it stands on, and the lighter envelope around it is every hex it could hit after moving as far as it legally can this turn, dead zones and high-ground bonuses included. A unit that has already spent its turn keeps the same picture in a dimmer, dashed grey — a measuring tool for next turn, never a live threat — and an enemy's is drawn red, as the full move-and-fire it could make on its next turn. Unarmed units show their movement only, and a packed Siege shows no fire envelope until it deploys. Buildings carry no hex outline: their owner's color tints the rim of the pad they stand on — blue, red, or plain stone while neutral — and every pad sits grounded in the terrain.</p>
       <p><b>Fog:</b> unexplored table lies in shadow, and sight on this table is short: most units see only 2 hexes, medium tanks and battle copters 3, and the recon — the army's dedicated eyes — 4. Explored ground stays dim and shows no units. Forest hides a unit unless an enemy stands next to it; hills and forests block sight lines. Finding the enemy before it finds you is the game: push recons and drones forward, and expect the red column to be doing the same with its recons. Wren's drones are the exception: whatever a drone can reach with its sensors is fully revealed, forest or no forest. One mercy for flyers: a shot at a copter or drone from ordinary ground fire has a 25% chance to miss entirely — anti-air guns, other aircraft, and the Monolith Array's heavy shot never miss that way, and the forecast says so when the chance applies.</p>
     <p><b>Commander Wren:</b> only the blue army fields a commander. Wren is enhanced infantry on foot: she crosses forest, hills and rough ground at foot cost, takes infantry cover and forest hiding, is targeted as infantry rather than as a vehicle, can capture, and carries commander-grade firepower — she out-guns infantry and mechs outright and edges a tank against soft targets, though heavy armor still out-shoots her. Her aura reaches 2 hexes: foot units inside it capture faster, and infantry holding forest or a property inside it gains extra cover. If she is downed, she returns at her HQ after 3 turns at full strength, and while she is down no new drones can launch. She is built to grow with the campaign to come: each completed level will raise her maximum health by 2, up to 20 — in this battle she fights at 10, like everyone else. The red column has no commander, no aura and no drones — it compensates with extra funds and an extra recon.</p>
     <p><b>Drones:</b> tap Wren and choose Launch Drone; launching spends her attack for the turn, but never her move — she may launch and then move, or move and then launch, in either order, though she cannot also strike in a turn where she launches. She may keep at most two drones aloft, and she carries four launches per battle in total — a lost drone does not refund one, and the button shows how many are left. A drone flies 6 hexes over any ground and cannot end its move on an occupied hex. Its sensors fully reveal everything within 3 hexes, including units hidden in forest, which makes it the best way to learn a new table. And it stings now: a light shot at range 1 (25 against infantry, less against armour), earning kill credit and veterancy like any unit. It is still fragile: a single solid hit from anything that can target air brings it down, and anti-air guns are its natural counter. As Wren gains levels in later battles, her drones will branch by your preference into offensive, defensive, repair and capture models.</p>
     <p><b>Towers:</b> Infantry, Mech and Wren can raise a tower for 1500 funds on plains, forest, hills or road. The builder becomes the tower's garrison and leaves the board as a separate piece: the army trades a unit for reach. A manned tower sees 3 hexes and can fire once a turn at range 2 with a mech-class shot, and enemies that strike it may be answered in kind. The garrison is safe while the tower stands; if the tower is destroyed, the garrison reappears on the hex at half strength, exhausted. Tap your tower and choose Unman Tower: the garrison steps out whole and rested next turn, but an unmanned tower goes dormant, seeing only its own hex and unable to fire, until a friendly foot unit steps in and mans it again. An enemy foot unit standing on your tower captures it over two turns, just like a property; when the capture completes, the tower changes hands and any garrison inside is thrown out at half strength. Towers cannot be automated yet; that upgrade arrives with later battles.</p>
-    <p><b>Artifacts:</b> offworld tables — never Earth — hide Precursor artifacts in screened pockets away from the main battle lanes: a real detour to reach, never impossible, and able to swing a battle. All three kinds are captured like properties over two turns. All three sit dark and dormant while neutral, and all three light up with teal energy the moment they are captured and held — the owner ring around the hex says whose. None of them is a unit: holding an artifact never keeps an army alive, and an army whose last real unit falls loses even while it holds one.</p>
+    <p><b>Artifacts:</b> offworld tables — never Earth — hide Precursor artifacts in screened pockets away from the main battle lanes: a real detour to reach, never impossible, and able to swing a battle. All three kinds are captured like properties over two turns. All three sit dark and dormant while neutral, and all three light up with teal energy the moment they are captured and held — and like every building they carry no hex outline: the rim of the pad beneath each one is tinted in its owner's color (blue, red, or plain stone while neutral), and that rim says whose it is. None of them is a unit: holding an artifact never keeps an army alive, and an army whose last real unit falls loses even while it holds one.</p>
     <p><b>Monolith Array (the weapon):</b> a defense system built by a civilization that vanished long ago — three sleek obsidian fins around a teal lens, still humming with power. Until it is captured it attacks both teams: its weapon fires on its own at anyone from either army who lingers in range 2–3. Whoever holds it gains +250 income a turn and harnesses the weapon: a held Array is aimed by its holder, exactly like a manned tower — tap it and its targets in range 2–3 light up; tap one to see the forecast, tap again (or tap the crosshair) to fire. It gets one shot per round — and if you end your turn without firing it, it stays silent: manual means manual. The enemy aims it the same way on its turn. It can be re-captured, and the weapon flips with it, but a flip grants no extra shot that round.</p>
     <p><b>Levitating Gyre (reach):</b> segmented alien-alloy rings turning around a captive core. It carries no weapon and pays no income, and while neutral it is simply inert. While held, it sees 5 hexes for its owner — fog lifts around it as from a watch post — and friendly units that begin their activation within 3 hexes of it move +1 for that activation. The gift is judged where the unit starts: beginning outside the reach and crossing it mid-move grants nothing.</p>
     <p><b>Biolume Spire (sustain):</b> a grown, biomechanical crown of a machine, part organism and part engine. It carries no weapon and is inert while neutral. While held it pays +150 a turn, and at the start of its holder's turn every friendly unit within 1 hex of the Spire recovers +2 HP up to its maximum — the usual healing exclusions apply (no drones, tower garrisons, APC passengers or structures, and the Spire never heals itself).</p>
@@ -626,8 +633,12 @@ footer.site{color:rgba(210,235,245,.88)}
    diorama sheets (board plate + blue/red miniature sheets + property
    sheet). Nothing on the table is drawn or vector-substituted. */
 var DEVLOG = [
+'Sound review and rework \u2014 Mix by Faction, plus the pad-rim copy fix. COPY: How to Play Artifacts no longer claims a captured artifact is identified by a ring drawn on its hex; it now says what the grounding pass made true \u2014 buildings carry no hex outline, and the owner-colored rim of the pad beneath each artifact says whose it is. The artifact code comment and the three-artifact entry below were swept to the same pad-rim wording; contextual hexes that genuinely exist as play aids (movement, targeting, the range preview) are still described where accurate. REVIEW: every unit and structure voice (attack, travel, death) was inventoried for cartoon traits \u2014 pitched whistles and slide descents, pew laser bursts, springy envelopes, bright arcade pops. FLAGS FOUND: (1) the artillery incoming-shell whistle, a pitched sine slide from 1500 down to 420 \u2014 the worst offender, the same cartoon cue killed on the copter in an earlier pass; (2) the Recon pew burst, five descending square tones; (3) the drone death zap-pop, two long descending square slides; (4) the small-hit impact blip, a two-tone pitched plink; (5) Mech and Wren travel carried constant high sine whines (880 and 1180 Hz) that looped audibly; (6) drone launch and travel were smooth detuned sine whirs, toy-like; (7) the Tank railgun charge zip sat high and loud for a human gun; (8) alien units and the Monolith had no voices of their own at all \u2014 aliens fired, travelled and died with human military sounds, and the Monolith fired with the plain tower bang. The other deaths already met the low, rough standard (no whistle, no spin) and were left alone except the drone. REWORK \u2014 one faction decision (weaponFaction for attackers, snapFaction for victims) read by the weapon, travel and kill routines alike, so a unit attacks, travels and dies in a single palette. HUMAN MILITARY: infantry rifle cracks, Wren hero burst, Mech autocannon chug, Anti-Air flak, Medium Tank cannon boom, Rockets roughened with grit, Battle Copter rotor and cannon, Siege still the biggest gun; the Recon is now a suppressed PDW crack burst; the Tank charge is a brief low spool under a breech clank with the crack-boom dominant; ARTILLERY takes the approved military howitzer \u2014 muzzle crack, deep boom, long rumble, distant echo \u2014 and the whistle is DELETED outright, the shell flight now a noise-based air tear only, never a pitched tone. ALIEN: Skitter chitin snaps, Burrower burrowing bio-cannon, Stalker needle spits, Behemoth deep bio-cannon with a short noise-layered charge, Spitter acid lob whose impact sizzles, Shrieker wing-chop and plasma spits with the screech kept low in the mix; alien travel is organic (skittering clicks, burrowing rumble, wet slither, heavy organic tread); alien deaths are chitin crunches, organic booms and sizzle tails; the Monolith Array fires the alien heavy-plasma voice (charge whine layered in noise, fat discharge, sub thump, sizzle tail) and dies in a plasma collapse; capturing any artifact now plays an alien activation \u2014 a low hum swell, soft teal chime harmonics, an ionized shimmer, with an inverted sinking hum when Red takes one \u2014 instead of the brass capture sting, which ordinary property keeps. ROBOTIC: towers take the approved rail-mortar (servo clank, pneumatic hiss, hard launch thud, metal ring), tower deaths gain failing servos and a settling ring, the drone sting is a servo tick and one hard little crack, drone launch and travel are square-drive servo machines, and the drone death is a brittle airframe snap with servo ticks. PRESERVED: the SFX and music buses, the compressor, the sliders and their persistence, the ambient audio session behavior, CPU volume reduction, damage-scaled impacts, counterattacks answering in the defender\u2019s own voice and faction, per-class distinctness; music and save format untouched; footer byte-exact. Verified with a stub-AudioContext harness (57 checks): every class fires once with a distinct graph signature in its faction across attack, travel and death; an explicit sweep asserts no pitched-whistle routine remains \u2014 the human artillery branch contains no tone at or above 900 Hz, and the old whistle and pew lines are absent from the source (the only descending high tones left anywhere are the Shrieker screech layers at gain 0.02, deliberate and low in the mix, as the brief allows); driven battles on Board 1 (artillery, Recon, a tower, a tank kill) and First Contact (Spitter, Skitter, Behemoth, a Skitter death, neutral Monolith auto-fire) route through doAttack and turretPhase in the right factions with zero console errors. Whether the timbres feel warlike is Matthew\u2019s ear call on his device.',
+'Buildings belong to the terrain now — no hex outlines, grounded pads, owner-colored pad rims. REMOVED: the automatic owner hex outline (ownerHexPoly and the whole #ownerSvg dressing) from every building and structure — towns, factories, HQs and their Belt station and First Contact hive analogs, built towers, and all three artifacts. No hexagon is traced merely because a building occupies a hex; contextual hexes used as play aids (movement, targeting, selection, the range preview) are untouched. OWNERSHIP moved onto the miniature itself: each pad\u2019s rim is tinted in the owner\u2019s color — blue for Blue, red for Red, plain stone while neutral — as an elliptical ring seated on the pad\u2019s base edge with a whisper of the same color washed across the pad base (padRimHtml in renderProps, applied to properties and towers alike); the capture pennant is unchanged, and explored-but-not-visible properties dim their rim with their existing fog dimming, which is otherwise intact. GROUNDING: every pad now sits IN the ground on the shared pooled contact shadow (.aosh, already the house language) plus a new soft ground-blend wash (.padblend) feathered under the pad\u2019s outer edge, so no hard pad edge hovers over the plate — on every board, space stations and the alien hive included. Units are unchanged. Verified with the driven harness: renderProps leaves #ownerSvg empty and emits no polygons, pad rims in all three owner colors cover every rendered property, First Contact props render rims the same way, and the full tap-flow regression (select, forecast, tap-to-close, chooser, production) still passes with zero console errors. Whether the buildings finally look like they belong is Matthew\u2019s eye call on his device.',
+'Range and threat preview on selection and inspection. Selecting or inspecting any unit or armed structure now previews its reach in two layers, both computed from the game\u2019s own rules so the picture can never disagree with what is legal: the firing BAND from the entity\u2019s current hex (effRange — minimum-range dead zone and the indirect/siege high-ground bonus included) and the move-and-fire ENVELOPE — every hex inside the band of any hex reachable() says the entity can legally reach this activation (real terrain costs, occupancy, the Gyre movement bonus), with move-then-fire legality gated by previewCanFire (a packed Siege cannot fire, a launched Wren has spent her attack, a dormant tower has no crew). STATES: a fresh own unit draws the active treatment (bright blue band, lighter envelope); an own unit that has SPENT its turn — acted, or a structure that has fired this round — draws the identical geometry desaturated, dimmer and dashed, a measuring tool for next turn that never looks fireable; a visible enemy draws a red projection assuming a full fresh move-and-fire on its next activation; a neutral Monolith Array draws its band in amber. Unarmed units (Transport) show movement only; a packed Siege shows movement only and a deployed one its band and envelope; drones show their range-1 band and envelope; manned towers and the Monolith show their band, in the spent treatment once fired. The readout gains a plain line — \u201CRange 2–3 · Ready\u201D, \u201CSpent this turn\u201D, or \u201CEnemy projection\u201D as applies. Mode and geometry derive live at draw time from the inspected entity (set by describeHex under exactly its occupant visibility rules), so firing mid-inspection drops the picture into the spent treatment on the next render, the preview lives and clears with selection as the other highlights do, and no command flow changes: a spent unit still cannot act, and inspecting an enemy is information only. FOG: a hidden enemy sets no preview and shows no range, no exceptions. Verified with a driven harness against the shipped code: a spent artillery\u2019s band and envelope match its fresh geometry hex-for-hex while drawing dashed grey; a fresh artillery draws the active treatment; an enemy rockets\u2019 band-plus-envelope equals a brute-force union of the bands of every reachable origin (so the minimum-range dead zone is respected inside the envelope), covers a blue unit standing on an envelope hex, and does not cover a hex beyond its move-and-fire reach; a packed Siege shows no fire envelope, a deployed one does; a fog-hidden enemy produces no preview; zero console errors.',
+'Tap any hex: full terrain values in the readout. Every explored hex\u2019s inspection readout now carries the hex\u2019s gameplay values in its default view (not behind the More detail expander): the terrain name as the player knows it on that board (Spore Grove, Crystal Highlands and Acid Pool on First Contact; Crater and Highlands on Luna; Asteroid Field and Open Space on The Belt), its defense bonus exactly as the engine applies it to a ground defender — stars at 10% per star, percentage stated (\u201Cdefense ★★ · −20% damage taken\u201D) — the movement cost for each movement class read straight out of the one MOVECOST table through moveCostAt (Foot / Wheeled / Tracked / Low air / High air, or \u201CImpassable\u201D where the class cannot enter), and one short special-rules line where the terrain has one: forest and its analogs hide units and block sight; hills and analogs block sight and give indirect and siege weapons +1 range from high ground; water and acid pools give no defense, bar vehicles, and let foot wade at cost 3; roads and bridges cost 1 for every ground class. Property hexes show their property defense and the shared cost-1 row, with income, factory production, HQ stakes, relay objective, or artifact role and healing on their special line as the kind applies. The terrain block appears alongside the existing occupant block exactly as before — empty hexes, unit and structure hexes, and explored-but-not-visible hexes all show it. FOG HONESTY unchanged and re-verified: an unexplored hex shows only that it is unexplored (no name, no values), an explored hex shows its terrain values but never a hidden unit, and no fog computation changed. Every existing tap flow is preserved — unit selection, tap-an-enemy to move into range and confirm, the stacked-hex chooser, the action panel, factory production and artifact interactions all run their original paths; this pass only fills in the terrain readout. How to Play\u2019s Movement and terrain section now states the tap-to-inspect values. Verified with a driven harness against the shipped code: the readout was produced and checked for every terrain type in the game (plains, road, forest, hills, mountain, water, bridge, dense cluster, and property hexes) including at least one analog terrain on each special board (Crater, Highlands, Asteroid Field, Open Space, Spore Grove, Crystal Highlands, Acid Pool, Biolume Spire, Levitating Gyre), the three fog states each behave as specified, the tap-flow regression passes, and there are zero console errors.',
 'Sprites ship as text data modules — packaging only, no gameplay, visual, audio or save change. With the three-artifact sprites added, the embedded sprite map pushed index.html to 5,279,347 bytes, past the publish route\u2019s per-request ceiling (the route answered HTTP 413; the 4,908,746-byte build from the night before had published fine). The sprite map now travels exactly the way the board plates already do: as text data modules at assets/sprites-a.js and assets/sprites-b.js assigning window.XENOFRONT_SPRITES, loaded in the head before the game script, and the game reads the merged map as SPRITES exactly as before. The data URI strings were moved verbatim — all 76 sprites were verified per sprite by decoding both the old embedded value and the new module value and comparing MD5s; every one matches, so the decoded bytes are bit-identical. No recompression, no resizing, no quality change of any kind, per the standing quality-over-size rule. index.html is now 381,162 bytes; the two modules are 2,491,321 and 2,410,005 bytes — each comfortably pushable on its own. The board plate modules are untouched, including the toned-down board-6.js. Save format and key, the byte-exact footer, music and every rule are unchanged.',
-'Three artifacts, three jobs — the Precursor pass. The single Sentinel is now a family of three artifacts, each built from its approved concept render as a tabletop miniature in the house style (high three-quarter view, sculpted pad, same footprint and owner outline as the other structures), each in TWO states: a dormant sprite, dark with its lights off, while neutral, and an activated sprite with the teal glow lit once held by either side; a capture completes with the existing capture sting plus a brief teal core flare, and the owner hex outline says whose it is. THE KINDS: (1) MONOLITH ARRAY (the weapon) replaces the Sentinel\u2019s body and name everywhere — the ruin kind keeps its key for save compatibility, so an old save\u2019s Sentinel becomes the Monolith Array in place. Every Sentinel rule is unchanged: 10 HP fixture turret, range 2–3 with the dead zone, vision 3, damage 70/55/45/80, +250 income, neutral auto-fire at BOTH armies in the turret phase, manual aim when player-held, CPU fire on its turn, one shot per round, kill credit to the holder. (2) LEVITATING GYRE (reach): no weapon, no income, inert while neutral; while held its fixture sees 5 hexes for its owner through the shared fog sweep, and friendly units that BEGIN their activation within 3 hexes gain +1 movement — the bonus lives in the one shared movement computation (reachable/findPath), so range highlight, pathing, tap-to-close and CPU movement all agree, and starting outside the radius earns nothing even if the path crosses it. (3) BIOLUME SPIRE (sustain): no weapon, inert while neutral; while held it pays +150 a turn through the normal income sum, and at the start of the holder\u2019s turn friendly units within 1 hex heal +2 to max in beginSideTurn beside property repairs, with the same green riser, soft chime and exclusions (no APC passengers, tower garrisons, drones or structures; the Spire never heals itself; its fixture must be alive and held). SHARED RULES: all three are properties captured by foot units over two turns with the existing capture clock and pennant (ships board on The Belt as they do for stations); each carries a 10 HP targetable fixture unit on its hex (the Gyre/Spire fixtures are unarmed and render as a bare HP/forecast carrier over the property body — the stacked-hex chooser lists every artifact on its hex); NO artifact of any kind counts as a remaining unit for rout, for either side — the exclusion is generalized from the turret type to all artifact fixtures in the win check, the objectives count and the CPU turn order. Readouts follow the uniform compact pattern: role numbers by default, Precursor lore behind More detail. PLACEMENT (new battles only): The Belt — Monolith Array at (1,0), a north-west edge pocket screened by asteroid fields; Levitating Gyre at (7,0), a north-east pocket screened by an asteroid field and a dense cluster; the old centre hex (6,4) is a neutral Habitat. First Contact — Biolume Spire at (1,1), a north-west pocket screened on four sides by spore groves; Monolith Array at (9,0), the north-east edge; the old centre hex (6,4) is a neutral town. No artifact remains at any board\u2019s centre. Reachability was probed from both HQs on both boards (foot costs on First Contact, ship costs on The Belt): every artifact is pathable and capturable from each HQ, and the Monolith\u2019s neutral 2–3 band covers neither HQ nor the central lane between them on either board. The toned-down Board 6 plate is byte-identical (626,968 bytes, md5 54098284…), as are all other plates, terrain and movement rules, music, and the save format and key. How to Play gains an Artifacts section covering all three kinds, the dark-until-captured rule, the rout exclusion and the off-the-beaten-path placement.',
+'Three artifacts, three jobs — the Precursor pass. The single Sentinel is now a family of three artifacts, each built from its approved concept render as a tabletop miniature in the house style (high three-quarter view, sculpted pad, same footprint and owner pad rim as the other structures), each in TWO states: a dormant sprite, dark with its lights off, while neutral, and an activated sprite with the teal glow lit once held by either side; a capture completes with the existing capture sting plus a brief teal core flare, and the owner-colored pad rim says whose it is. THE KINDS: (1) MONOLITH ARRAY (the weapon) replaces the Sentinel\u2019s body and name everywhere — the ruin kind keeps its key for save compatibility, so an old save\u2019s Sentinel becomes the Monolith Array in place. Every Sentinel rule is unchanged: 10 HP fixture turret, range 2–3 with the dead zone, vision 3, damage 70/55/45/80, +250 income, neutral auto-fire at BOTH armies in the turret phase, manual aim when player-held, CPU fire on its turn, one shot per round, kill credit to the holder. (2) LEVITATING GYRE (reach): no weapon, no income, inert while neutral; while held its fixture sees 5 hexes for its owner through the shared fog sweep, and friendly units that BEGIN their activation within 3 hexes gain +1 movement — the bonus lives in the one shared movement computation (reachable/findPath), so range highlight, pathing, tap-to-close and CPU movement all agree, and starting outside the radius earns nothing even if the path crosses it. (3) BIOLUME SPIRE (sustain): no weapon, inert while neutral; while held it pays +150 a turn through the normal income sum, and at the start of the holder\u2019s turn friendly units within 1 hex heal +2 to max in beginSideTurn beside property repairs, with the same green riser, soft chime and exclusions (no APC passengers, tower garrisons, drones or structures; the Spire never heals itself; its fixture must be alive and held). SHARED RULES: all three are properties captured by foot units over two turns with the existing capture clock and pennant (ships board on The Belt as they do for stations); each carries a 10 HP targetable fixture unit on its hex (the Gyre/Spire fixtures are unarmed and render as a bare HP/forecast carrier over the property body — the stacked-hex chooser lists every artifact on its hex); NO artifact of any kind counts as a remaining unit for rout, for either side — the exclusion is generalized from the turret type to all artifact fixtures in the win check, the objectives count and the CPU turn order. Readouts follow the uniform compact pattern: role numbers by default, Precursor lore behind More detail. PLACEMENT (new battles only): The Belt — Monolith Array at (1,0), a north-west edge pocket screened by asteroid fields; Levitating Gyre at (7,0), a north-east pocket screened by an asteroid field and a dense cluster; the old centre hex (6,4) is a neutral Habitat. First Contact — Biolume Spire at (1,1), a north-west pocket screened on four sides by spore groves; Monolith Array at (9,0), the north-east edge; the old centre hex (6,4) is a neutral town. No artifact remains at any board\u2019s centre. Reachability was probed from both HQs on both boards (foot costs on First Contact, ship costs on The Belt): every artifact is pathable and capturable from each HQ, and the Monolith\u2019s neutral 2–3 band covers neither HQ nor the central lane between them on either board. The toned-down Board 6 plate is byte-identical (626,968 bytes, md5 54098284…), as are all other plates, terrain and movement rules, music, and the save format and key. How to Play gains an Artifacts section covering all three kinds, the dark-until-captured rule, the rout exclusion and the off-the-beaten-path placement.',
 'First Contact landscape tone-down — the alien world stays alien, the battle reads. The Board 6 plate was reworked at its full 1920×1280 resolution (no downscale; nothing else recompressed): high-frequency detail and local contrast were pulled down across the whole plate — the dense crackle, speckle and root ribbing that competed with the miniatures are smoothed into larger, quieter shapes — saturation and overall contrast were eased, and the ground midtones muted a step, so units, structures, the Sentinel and the owner outlines are again the highest-contrast things on the table. Nothing moved: every grove, crystal cluster and pool sits exactly where it sat, the violet-and-teal palette is untouched, and the three terrain signatures stay distinct at a glance — spore groves read as violet bulb clusters, crystal highlands as teal shard clusters, and acid pools as the brightest glowing teal on the board. AMBIENT: First Contact\'s rising spore motes are halved (ten to five), fainter at their peak, slower, and rise less far; the bioluminescent grove pulses are fewer per view (nine to six) and softer. Both remain disabled entirely under prefers-reduced-motion and still spawn only over explored ground, so the fog stays honest. No gameplay, terrain grid, movement cost, stat, save format or music is touched — the sixth music variation is unchanged — no other board changes, and the Sentinel is exactly as it was; its redesign is a separate pass. Verified with same-view before/after captures of the opening framing at phone scale plus a phone-scale glance capture of the plate itself: groves, highlands, pools and open ground each identify at a glance, and the audit reports zero console errors. How calm is calm enough is Matthew\'s eye call on his device; the plate can be dialed further in either direction from here.',
 'The Precursor Sentinel, First Contact, and a table-wide tune-up. THE SENTINEL: the old ruin and its turret were never one thing and never belonged on Earth — both are now a single fused structure in weathered obsidian and dark bronze, alien-faceted, a teal energy lens grown out of the same mass, in the same high three-quarter miniature presentation as the HQ, factory and towns. In new battles it no longer spawns on the Terra boards: on Board 1 and Pinewall its old hex is a neutral town (the same capturable prize at normal town income), the Belt\u2019s Derelict becomes the Sentinel, and Mare Dust stays without one. Rules unchanged — 10 HP, range 2–3 with the dead zone, vision 3, damage 70/55/45/80, +250 a turn, neutral auto-fire, two-turn capture, one hand-aimed shot per round. Existing saves are untouched and load as before; the engine path stays for the offworld boards. Its long readout now sits behind a More detail expander, so its default readout matches any other structure\u2019s footprint. FIRST CONTACT (Board 6): a truly alien world — violet earth, spore groves for forest, crystal highlands for hills, acid pools for water — where Red fields a living brood: Skitters, Burrowers, Stalkers, a Behemoth, Spitters and Shriekers, each an existing class in alien presentation, produced by a Broodmother Hive under a Hive Heart, while Blue fields the normal expedition with its prefab structures. A neutral Sentinel stands at the centre, and the board gets the sixth music variation: the same motif, the most distant yet. A preview — alien stats mirror their classes, and unique alien abilities are future campaign design. WREN: launching a drone no longer costs her move — she may launch then move, or move then launch — but launching spends her attack, so she cannot also strike that turn; done-by-rule readiness, auto-finish, the end-turn warning, the ready cycle and the End Turn highlight all follow the new rule, on foot and aboard the Flagship. CAPTURE SOUND: completing a capture plays a short rising brass-triad sting (soft C–E–G–C, about half a second, SFX bus only); when Red completes a capture of yours, a muted descending pair answers; an HQ capture plays neither, so the win presentation stands alone. STACKED HEXES: tapping a crowded hex — a unit on the Sentinel, a tower or a factory — opens a small chooser listing what is there; choosing the Sentinel or tower gives its fire controls with the unit still standing on it, and fog rules govern the list exactly as they govern a direct tap. DEFENSIVE SUPPORT: allies beside a defender blunt its damage 10% each, up to 50% at five, inside the single shared forecast — direct, indirect, turret, tower and counterattack damage alike, a counter blunted by the original attacker\u2019s own neighbours; towers, drones and the Sentinel count as supporters and can be supported; a damaging hit still deals at least 1; the forecast shows the spared segments in pale steel. TERRAIN MOVEMENT: one cost table by class drives the highlight, pathing, tap-to-close and the CPU — roads, bridges and properties cost 1 for every ground class; open ground foot 1, wheels 2, treads 1; forest foot 1, wheels 3, treads 2; hills foot 2, wheels 3, treads 2; water foot 3 (infantry may end a move in it) and impassable to wheels and treads; Battle Copters fly at 1 over everything except hills and mountains, which they can neither cross nor land on; drones cross anything at 1; Belt ships keep their asteroid rules. DEATHS: the cartoon is gone — no spin, no falling whistle. A shot-down Battle Copter shudders as its rotor chop stutters and its engine dies, nose down, accelerating into the ground before it fireballs on impact; explosions are ragged with dark edges, heavy debris, longer dirty smoke and lingering scorch; vehicles shudder and break before the burst; the Sentinel\u2019s core flickers and fails as it collapses inward; kill sounds run lower and rougher (sub boom, metallic tear, debris clatter, crackle tail); reduced motion keeps its static-flash path. SPRITE OPACITY: the see-through units in the field were real, and the cause was in the sprite cuts themselves — a baked translucent veil (interior alpha averaging 232–252, worst on Wren, infantry, artillery and rockets); the render path applied no opacity to units at all. Every sprite has been de-veiled to fully opaque hulls, and the fog dim on towers and properties now uses brightness instead of opacity, so no sprite is translucent in any state. Footer, save format and Board 1\u2019s track are untouched. AMBIENT LIFE PASS: the diorama now breathes, quietly. Explored water hexes carry a slow shimmer, soft cloud shadows drift over the land boards on a long cycle, explored forest hexes sway a pixel or two, Mare Dust gets drifting dust, The Belt gets twinkling stars and a slow glow drift, and First Contact gets rising spore motes and bioluminescent grove pulses. Visible factories breathe a sparse smoke puff, the HQ mast light blinks on a long interval, town windows flicker warm, tower beacons blink, the Sentinel\u2019s core pulses teal while it idles, and the alien hive pulses organically. Copters idle with a turning rotor blur, drones hover-bob with a breathing shadow, ground vehicles breathe a rare exhaust wisp, and infantry, mechs and Wren sway about a pixel — ground units never lift or bounce and their planted shadows stay glued, per the grounding rule. Fog stays honest: ambient spans are only created for entities and terrain the player can currently see or has explored, hidden units are never rendered and never move. Every ambient loop is transform/opacity only, pauses while the page is hidden, and is disabled entirely under prefers-reduced-motion. SENTINEL HOSTILITY LOCKED: verified in the engine and stated plainly in How to Play and the expanded readout — until captured, the neutral Sentinel attacks BOTH teams in the turret phase, picking the lowest-HP target in its range 2-3 band from the combined pool with no side preference; the moment it is captured it belongs wholly to its holder and only ever targets the owner\u2019s enemies, with the one-shot-per-round stamp still governing mid-round flips. Whether the liveliness level and the deaths finally feel right is the user\u2019s call on his device; each ambient layer can be dialed independently. ROUT: the Sentinel no longer counts as a remaining unit for rout on either side — an army whose last real unit falls loses at that moment even while it holds the artifact, the Objectives rout counts agree, and How to Play and the Objectives now say so plainly. It still pays income, earns kill credit for its holder, and counts as a ready action when its owner can fire it; towers, drones and a downed Wren keep their existing rout treatment. BATTLE-END CUES: each win condition now has its own synthesized voice, fired by the engine\u2019s declared condition exactly once — a rout win gets a heavy martial brass figure with a percussive finish, an HQ capture a bright banner-planted swell and flourish, an objective win (the relay) a clean signal-achieved ping motif, and any defeat one somber low cue resolving downward. An HQ capture that ends the game plays only the HQ cue, never the capture sting as well.',
  'Per-board music: one score, five places. Board 1 keeps its existing track EXACTLY as it was — the sequencer still schedules it through the original code path, note for note and parameter for parameter (same SCALE, same BASSLINE, same step clock 0.46/0.27/0.21, same gains and waveforms), and its entry in the new TRACKS table merely documents those parameters. Boards 2-5 gain true variations on the same motif DNA — the same scale, the same bass motif anchors, the same pad roots [0,3,5,1] and lead phrase [5,4,3,4] — revoiced, re-spaced and re-paced, all minimal and thought-provoking per the brief: sparse arrangements, slow harmonic movement, generous silence, soft tones, nothing busy and nothing that competes with the battle SFX. Twin Bays is the lightest: a slower clock (x1.15), sine bass with the motif anchors opened out, wide pad voicings (x2/x4/x5) swelling in slowly, and the lead thinned to a soft sine every eight steps. Pinewall is sparser and lower: clock x1.35, the bass dropped an octave and thinned to three anchors per cycle, low pad voicings, and a single low lead note per cycle. Mare Dust is colder and thinner: clock x1.5, the motif slightly fractured (an off-beat repeat of the root), only two thin pad tones, a triangle lead two octaves up at low gain, and a faint high shimmer (root x8) above long silences. The Belt is the most minimal: clock x1.8, deep sub pulses on two anchors per cycle, two distant pad tones with the slowest swells, and the lead present but far away, answered by two decaying echoes. WIRING: the music follows the active board — the start screen plays Board 1, and starting, resuming or switching a battle crossfades over 1.5 seconds with no hard cut, via two track buses feeding the existing music bus (the old track rings out on its bus as it ramps down while the new track fades in on the other). Still fully synthesized live with WebAudio — no audio files. The Master/Music/SFX sliders and their persistence, the guarded ambient audio session and the unlock/resume hardening are untouched; slider changes still drive the music bus gain the tracks feed. Verified with a stub-AudioContext harness: each board activates its own distinct track definition, the five definitions differ in their arrangement parameters, Board 1 matches the pre-pass parameters exactly, a board switch ramps both buses and lands on the new track, a resumed Board 4 save starts the Luna variation, and the music bus still answers the sliders, with zero console errors. As with all audio in this project, the musical feel itself can only be judged on a real device.',
@@ -766,7 +777,7 @@ var PROPS = {
    unarmed fixtures (types 'gyre' / 'spire'). Neutral = dormant
    sprite, inert except the Monolith's neutral auto-fire; held by
    either side = the activated, glowing sprite, with the owner hex
-   outline saying whose it is. NO artifact fixture ever counts as a
+   rim saying whose it is. NO artifact fixture ever counts as a
    remaining unit for rout. Old saves hold only a 'ruin' property
    and its turret, which simply become the Monolith Array in place;
    Gyre and Spire fixtures exist only where a board definition
@@ -1782,14 +1793,14 @@ function doAttack(att, def){
     log(effType(att).name + ' (' + sideName(att.side) + ') fires on ' + effType(def).name + ' — a clean miss: the flyer jinks clear (airborne evasion).');
   } else {
     killed = applyDamage(att, def, dmg);
-    sfxImpact(dmg, killed, impDelay, !!(effType(att).indirect || effType(att).siege), deathKindOf(dSnap), deathScaleOf(dSnap), att.side === 'E' ? 0.65 : 1);
+    sfxImpact(dmg, killed, impDelay, !!(effType(att).indirect || effType(att).siege), deathKindOf(dSnap), deathScaleOf(dSnap), att.side === 'E' ? 0.65 : 1, snapFaction(dSnap));
     queueShotFx(aSnap, dSnap, dmg, killed, impDelay, false);
     log(effType(att).name + ' (' + sideName(att.side) + ') hits ' + effType(def).name + ' for ' + dmg + (fc.surround ? ' (surround x' + fc.surround + ')' : '') + '.');
     if (att.type === 'siege'){
       var ns = neighbors(def.c, def.r);
       for (var i = 0; i < ns.length; i++){
         var o = unitAt(ns[i][0], ns[i][1]);
-        if (o && o.side !== att.side && o.id !== def.id){ var oSnap = fxSnap(o); var sdmg = Math.max(1, Math.round(dmg / 2)); var sKilled = applyDamage(att, o, sdmg); queueShotFx(aSnap, oSnap, sdmg, sKilled, impDelay + 0.08, true); if (sKilled) sfxImpact(4, true, impDelay + 0.08, true, deathKindOf(oSnap), deathScaleOf(oSnap), att.side === 'E' ? 0.65 : 1); log('Siege splash catches ' + effType(o).name + '.'); }
+        if (o && o.side !== att.side && o.id !== def.id){ var oSnap = fxSnap(o); var sdmg = Math.max(1, Math.round(dmg / 2)); var sKilled = applyDamage(att, o, sdmg); queueShotFx(aSnap, oSnap, sdmg, sKilled, impDelay + 0.08, true); if (sKilled) sfxImpact(4, true, impDelay + 0.08, true, deathKindOf(oSnap), deathScaleOf(oSnap), att.side === 'E' ? 0.65 : 1, snapFaction(oSnap)); log('Siege splash catches ' + effType(o).name + '.'); }
       }
     }
   }
@@ -1807,7 +1818,7 @@ function doAttack(att, def){
     if (def.tower) def.fired = true;   // answering fire spends the tower's shot
     var cDelay = sfxWeapon(def, 0.65);   // the defender answers with its own weapon's voice
     var cKilled = applyDamage(def, att, cdmg, true);
-    sfxImpact(cdmg, cKilled, cDelay, !!(effType(def).indirect || effType(def).siege), deathKindOf(aSnap), deathScaleOf(aSnap), 0.65);
+    sfxImpact(cdmg, cKilled, cDelay, !!(effType(def).indirect || effType(def).siege), deathKindOf(aSnap), deathScaleOf(aSnap), 0.65, snapFaction(aSnap));
     queueShotFx(dSnap, aSnap, cdmg, cKilled, cDelay, false);   // counter kills get the same death treatment
     def.xp += 1;
   }
@@ -1816,6 +1827,7 @@ function doAttack(att, def){
 
 /* ---------------- Rendering ---------------- */
 var selUnit = null, selTower = null, selTurret = null, moveSet = {}, pendingForecast = null, preMove = null, busy = false;
+var rangePreviewEnt = null;   // entity whose range/threat preview the highlight layer draws (set by describeHex)
 var flashHexes = [];
 var boardEl, worldEl, fogSvg, ownerSvg, hlSvg, unitLayer, propLayer, readoutEl;
 /* ---------------- Sprites (external data modules) ----------------
@@ -1927,56 +1939,46 @@ function fcBarHtml(att, def){
   var cpNS = Math.min(att.hp, fc0.counterNS || fc0.counter);
   return { html: '<div class="fcbars">' + hpBarHtml(def, dp, fc0.surround > 0, Math.max(0, dpNS - dp)) + (cp > 0 ? hpBarHtml(att, cp, false, Math.max(0, cpNS - cp)) : '') + '</div>', doomed: dp >= def.hp };
 }
-/* Subtle hexagonal owner outline for one territory hex, in board
-   coordinates: same center and pointy-top orientation as the board's
-   hexes (hexPoints), scaled to sit just inside the hex boundary.
-   Thin translucent stroke in the owner color, whisper of tint fill —
-   a quiet territorial edge, not a badge. strength: 1 resting,
-   >1 slightly stronger (manned tower), <1 dimmer (dormant tower).
-   Geometry audited against the interaction hexes: identical center,
-   orientation and radius family (0.90 vs 0.96 scale). The polygon is
-   complete and gapless; it renders in #ownerSvg, which sits ABOVE the
-   property layer, so all six sides stay legible even where a tall
-   sprite crosses the upper edges — the outline can no longer be
-   mistaken for a pentagon by a sprite covering its top vertex. */
-function ownerHexPoly(c, r, owner, strength){
-  var stroke, fill;
-  if (owner === 'P'){ stroke = 'rgba(96,168,235,'; fill = 'rgba(96,168,235,'; }
-  else if (owner === 'E'){ stroke = 'rgba(240,110,84,'; fill = 'rgba(240,110,84,'; }
-  else { stroke = 'rgba(238,220,175,'; fill = 'rgba(238,220,175,'; }
-  var baseA = owner === 'N' ? 0.34 : 0.58, fillA = owner === 'N' ? 0.03 : 0.05;
-  var a = Math.max(0.08, Math.min(0.85, baseA * (strength || 1)));
-  var fa = Math.max(0.01, Math.min(0.10, fillA * (strength || 1)));
-  var wdt = 1.6 * (strength && strength > 1 ? 1.1 : 1);
-  var dimmed = visNow[key(c, r)] ? 1 : 0.72;
-  /* Same dual-contrast treatment as the interaction hexes: a dark
-     under-stroke carries the owner color's legibility on any
-     terrain brightness — the faint neutral parchment line needed
-     it most, disappearing entirely on sunlit grass before. */
-  var pts = hexPoints(hexCX(c, r), hexCY(r), 0.90);
-  var ua = Math.min(0.68, Math.max(0.34, a * 0.8)).toFixed(3);
-  return '<polygon points="' + pts + '" fill="' + fill + fa.toFixed(3) + ')" stroke="rgba(26,17,7,' + ua + ')" stroke-width="' + (wdt + 2.4).toFixed(2) + '" stroke-linejoin="round" opacity="' + dimmed + '"/>' +
-    '<polygon points="' + pts + '" fill="none" stroke="' + stroke + a.toFixed(3) + ')" stroke-width="' + wdt.toFixed(2) + '" stroke-linejoin="round" opacity="' + dimmed + '"/>';
-}
+/* Buildings carry NO hex outline: a structure never quite fills its
+   hex, so a traced hexagon around it read as a drafting error and
+   made the building look pasted onto the board. Ownership rides on
+   the miniature itself instead — the sculpted pad's rim is tinted in
+   the owner's color (padRimHtml, an elliptical ring seated on the
+   pad's base edge, feathered like the pad), and the pad sits IN the
+   ground on the shared pooled contact shadow plus a soft ground-blend
+   wash under its edge, so no hard pad edge hovers over the plate.
+   Contextual hexes (movement, targeting, selection, the range
+   preview) are play aids and are untouched. */
 /* Capture pennant: a small flag whose fill, in the capturer's
    colour, is the capture progress (capPts of 20 — half-filled
    after the first turn of a two-turn capture). */
 function pennantHtml(capSide, pts){
   return '<span class="pennant' + (capSide === 'E' ? ' e' : '') + '"><span class="pole"></span><span class="flag"><i style="width:' + Math.round(pts / 20 * 100) + '%"></i></span></span>';
 }
+/* Owner pad rim: an elliptical ring in the owner's color seated on
+   the pad's base edge — blue for Blue, red for Red, plain stone for
+   neutral — with a whisper of the same color washed across the pad
+   base. dimmed (explored but not currently visible) rims fade with
+   the property's own fog dimming. */
+function padRimHtml(owner, dimmed){
+  var col = owner === 'P' ? '79,157,223' : owner === 'E' ? '224,86,58' : '206,192,158';
+  var a = owner === 'N' ? 0.55 : 0.92;
+  if (dimmed) a *= 0.6;
+  return '<span class="padblend"></span><span class="padrim" style="border-color:rgba(' + col + ',' + a.toFixed(2) + ');background:radial-gradient(ellipse at center,rgba(' + col + ',' + (a * 0.16).toFixed(3) + ') 52%,rgba(' + col + ',' + (a * 0.05).toFixed(3) + ') 74%,rgba(' + col + ',0) 88%)"></span>';
+}
 function renderProps(){
-  var html = '', ownerHtml = '';
+  var html = '';
   for (var k in G.props){
     var p = G.props[k], parts = k.split(','), c = +parts[0], r = +parts[1];
     var show = G.explored[k] || p.owner === 'P';
     if (!show) continue;
     var cx = hexCX(c, r) / BW * 100, cy = hexCY(r) / BH * 100;
     var dim = visNow[k] ? '' : 'filter:brightness(.72) saturate(.75);';
-    /* No property carries words: silhouettes say what each structure is
-       and a subtle hex outline in the owner color says whose it is. */
-    ownerHtml += ownerHexPoly(c, r, p.owner, 1);
+    /* No property carries words and none carries a hex outline:
+       silhouettes say what each structure is, and the owner-colored
+       tint on its pad's rim says whose it is. */
     /* The ruin stays ancient and stone-grey whoever holds it — only
-       its hex outline and its turret's lights take the owner's color. */
+       its pad rim and its turret's lights take the owner's color. */
     /* Artifacts carry their state in the sprite itself: dormant
        (dark) while neutral, activated (teal glow lit) once held by
        either side — the owner outline above says whose it is. */
@@ -1994,13 +1996,13 @@ function renderProps(){
       else if (isArtifactKind(p.kind) && p.owner !== 'N') ambProp = '<span class="ambx amb-core"></span>';
     }
     html += '<div class="prop' + (p.owner === 'N' && !isArtifactKind(p.kind) ? ' neutral' : '') + (isArtifactKind(p.kind) ? ' artifact' + (p.owner === 'N' ? '' : ' on') : '') + '" style="left:' + cx + '%;top:' + cy + '%;width:' + PROPS[p.kind].w + '%;z-index:' + (10 + r) + '">' +
-      '<span class="aosh"></span>' + ambProp + (p.capUnit ? pennantHtml(p.capSide, p.capPts) : '') +
+      '<span class="aosh"></span>' + padRimHtml(p.owner, !visNow[k]) + ambProp + (p.capUnit ? pennantHtml(p.capSide, p.capPts) : '') +
       '<img src="' + (artSpr || SPRITES[propSpr(p.kind) + (p.owner === 'E' ? '-e' : '') + '.png']) + '" alt="' + propName(p.kind, p.owner) + '" style="width:100%;' + dim + ruinGrade + '">' +
       '</div>';
   }
-  /* Towers render with the properties: the same subtle owner hex
-     outline (manned slightly stronger, dormant dimmer), lit or dim
-     sensor lights, HP pips, capture bar — no words. */
+  /* Towers render with the properties: no hex outline — the owner's
+     color tints the rim of the tower's pad, with lit or dim sensor
+     lights, HP pips, capture bar — no words. */
   var att2 = currentAttacker();
   for (var ti = 0; ti < G.towers.length; ti++){
     var tw = G.towers[ti], tk = key(tw.c, tw.r);
@@ -2009,15 +2011,14 @@ function renderProps(){
     var tfc = '', tdoom = false;
     if (att2 && tw.side !== att2.side && canTarget(att2, tw)){ var fp2 = fcBarHtml(att2, tw); tfc = fp2.html; tdoom = fp2.doomed; }
     var tcap = tw.capUnit ? '<div class="capbar"><div style="width:' + Math.min(100, tw.capPts / 20 * 100) + '%"></div></div>' : '';
-    ownerHtml += ownerHexPoly(tw.c, tw.r, tw.side, manned ? 1.18 : 0.5);
     html += '<div class="piece towerp ' + (manned ? 'manned' : 'dormant') + (tw.side === 'E' ? ' eside' : '') + (tdoom ? ' doomed' : '') + '" data-uid="' + tw.id + '" style="left:' + (hexCX(tw.c, tw.r) / BW * 100) + '%;top:' + (hexCY(tw.r) / BH * 100) + '%;width:' + TYPES.tower.w + '%;z-index:' + (18 + tw.r) + (visNow[tk] ? '' : ';filter:brightness(.78) saturate(.8)') + '">' +
-      '<span class="aosh"></span>' + (visNow[tk] ? '<span class="ambx amb-beacon"></span>' : '') + (tw.capUnit ? pennantHtml(tw.capSide, tw.capPts) : '') +
+      '<span class="aosh"></span>' + padRimHtml(tw.side, !visNow[tk]) + (visNow[tk] ? '<span class="ambx amb-beacon"></span>' : '') + (tw.capUnit ? pennantHtml(tw.capSide, tw.capPts) : '') +
       tfc +
       '<img src="' + SPRITES['tower' + (tw.side === 'E' ? '-e' : '') + '.png'] + '" alt="Tower (' + sideName(tw.side) + (manned ? ', manned' : ', dormant') + ')" style="width:100%">' +
       hpBarHtml(tw, 0, false) + tcap + '</div>';
   }
   propLayer.innerHTML = html;
-  if (ownerSvg) ownerSvg.innerHTML = ownerHtml;
+  if (ownerSvg) ownerSvg.innerHTML = '';
 }
 function renderFog(){
   var out = '';
@@ -2028,6 +2029,91 @@ function renderFog(){
   }
   fogSvg.innerHTML = out;
   fogSvg.style.filter = 'blur(3px)';
+}
+/* ---------------- Range / threat preview ----------------
+   Selecting or inspecting any unit or armed structure previews two
+   layers, both computed from the game's own rules so the picture can
+   never disagree with what is legal: the firing BAND from the
+   entity's current hex (effRange — minimum-range dead zone and the
+   high-ground bonus included), and the move-and-fire ENVELOPE —
+   every hex inside the firing band of any hex the entity could
+   legally reach this activation (reachable() itself: real terrain
+   costs, occupancy, per-class legality, the Gyre bonus), respecting
+   move-then-fire legality through previewCanFire (a packed Siege
+   cannot fire at all, a launched Wren has spent her attack, a
+   dormant tower has no crew). States: a fresh own unit draws the
+   active treatment; a SPENT own unit (acted, or a structure that has
+   fired this round) draws the same geometry desaturated and dashed —
+   a measuring tool for next turn, never fireable; an enemy draws a
+   red projection assuming a full fresh move-and-fire; a neutral
+   Monolith draws its band in amber. Unarmed units show movement
+   only. Mode and geometry are derived live at draw time, so a unit
+   that fires mid-inspection drops into the spent treatment on the
+   next render by itself. Fog: the preview entity is only ever set
+   for entities the inspection itself may show (describeHex's own
+   visibility rules), so a hidden enemy produces no preview. */
+function previewCanFire(ent){
+  var t = effType(ent);
+  if (!t || t.rmax === 0) return false;
+  if (ent.type === 'siege' && !ent.deployed) return false;
+  if (ent.tower && !ent.garrison) return false;
+  if (ent.launched) return false;
+  return true;
+}
+function previewModeFor(ent){
+  if (!ent) return null;
+  if (ent.side === 'E') return 'enemy';
+  if (ent.side === 'N') return 'neutral';
+  if (ent.tower) return ent.fired ? 'spent' : 'active';
+  if (ent.type === 'turret') return turretCanFire(ent) ? 'active' : 'spent';
+  return ent.acted ? 'spent' : 'active';
+}
+function rangeAtHex(ent, c, r){
+  var t = effType(ent), rmax = t.rmax;
+  if ((t.indirect || t.siege) && (terrainMap[key(c, r)] === 'hills' || terrainMap[key(c, r)] === 'mountain')) rmax += 1;
+  return { min: t.rmin, max: rmax };
+}
+function previewHexes(ent){
+  var t = effType(ent);
+  var fire = previewCanFire(ent);
+  var immobile = !!ent.tower || isArtifactUnit(ent) || t.mt === 'fixed' || t.mv === 0;
+  var freshProjection = ent.side !== 'P' || ent.acted;
+  var move = {};
+  if (!immobile && (freshProjection || !ent.moved)) move = reachable(ent);
+  var band = {}, env = {};
+  if (fire){
+    var home = rangeAtHex(ent, ent.c, ent.r);
+    for (var r = 0; r < ROWS; r++) for (var c = 0; c < COLS; c++){
+      var d = hexDist([c, r], [ent.c, ent.r]);
+      if (d >= home.min && d <= home.max) band[key(c, r)] = true;
+    }
+    var origins = [[ent.c, ent.r]];
+    for (var mk in move) { var mp = mk.split(','); origins.push([+mp[0], +mp[1]]); }
+    for (var oi = 0; oi < origins.length; oi++){
+      var og = origins[oi], rg = rangeAtHex(ent, og[0], og[1]);
+      for (var r2 = 0; r2 < ROWS; r2++) for (var c2 = 0; c2 < COLS; c2++){
+        var k2 = key(c2, r2);
+        if (band[k2] || env[k2]) continue;
+        var d2 = hexDist([c2, r2], og);
+        if (d2 >= rg.min && d2 <= rg.max) env[k2] = true;
+      }
+    }
+  }
+  return { fire: fire, move: move, band: band, env: env };
+}
+function rangeStateLine(ent){
+  var mode = previewModeFor(ent), t = effType(ent);
+  var state = mode === 'enemy' ? 'Enemy projection' : mode === 'neutral' ? 'Neutral' : mode === 'spent' ? 'Spent this turn' : 'Ready';
+  if (isArtifactUnit(ent) && t.rmax === 0) return effType(ent).name + ' — unarmed artifact · no range to preview · ' + state;
+  if (ent.type === 'siege' && !ent.deployed) return 'Packed — no fire range until deployed · movement only · ' + state;
+  if (ent.tower && !ent.garrison) return 'Range 1–2 once manned · Tower dormant — man it to fire';
+  if (t.rmax === 0) return 'Unarmed — movement range only · ' + state;
+  var rg = effRange(ent);
+  var rs = rg.min === rg.max ? 'Range ' + rg.max : 'Range ' + rg.min + '–' + rg.max;
+  return rs + ' · ' + state +
+    (mode === 'enemy' ? ' — full move-and-fire projection for its next activation' : '') +
+    (mode === 'spent' ? ' — shown for measuring next turn' : '') +
+    (mode === 'neutral' ? ' — fires on both armies' : '');
 }
 function renderHighlights(){
   var out = '';
@@ -2069,6 +2155,38 @@ function renderHighlights(){
     if (pendingForecast){
       var pfc = forecast(pendingForecast.att, pendingForecast.def);
       out += poly(pendingForecast.def.c, pendingForecast.def.r, 'rgba(216,60,35,0.25)', 'rgba(255,90,60,1)', 3 + Math.min(3, pfc.surround));
+    }
+  }
+  /* Range / threat preview for the inspected entity (see the
+     preview section above): envelope first (lightest), then the
+     firing band, then — for unarmed or packed entities — the
+     movement set in the envelope treatment. Spent draws dashed. */
+  if (rangePreviewEnt && G && !G.over){
+    var pvEnt = rangePreviewEnt;
+    var pvValid = pvEnt.tower ? G.towers.indexOf(pvEnt) >= 0 : (G.units.indexOf(pvEnt) >= 0 && !pvEnt.downed && !pvEnt.garr);
+    if (!pvValid) rangePreviewEnt = null;
+    else {
+      var pvMode = previewModeFor(pvEnt), pv = previewHexes(pvEnt);
+      var pvStyles = {
+        active:  { band:['rgba(70,170,255,0.16)','rgba(90,200,255,0.85)',2], env:['rgba(70,170,255,0.05)','rgba(90,200,255,0.30)',1.2], dash:false },
+        spent:   { band:['rgba(155,165,175,0.10)','rgba(170,180,190,0.60)',1.8], env:['rgba(155,165,175,0.04)','rgba(170,180,190,0.32)',1.1], dash:true },
+        enemy:   { band:['rgba(230,80,50,0.15)','rgba(240,100,70,0.85)',2], env:['rgba(230,80,50,0.05)','rgba(240,100,70,0.30)',1.2], dash:false },
+        neutral: { band:['rgba(255,176,66,0.14)','rgba(255,190,80,0.80)',2], env:['rgba(255,176,66,0.05)','rgba(255,190,80,0.28)',1.2], dash:false }
+      };
+      var pvSt = pvStyles[pvMode] || pvStyles.active;
+      function pvPoly(c, r, st){
+        var pts = hexPoints(hexCX(c, r), hexCY(r));
+        var s = '<polygon points="' + pts + '" fill="' + st[0] + '" stroke="rgba(26,17,7,0.30)" stroke-width="' + (st[2] + 2).toFixed(2) + '" stroke-linejoin="round"/>' +
+          '<polygon points="' + pts + '" fill="none" stroke="' + st[1] + '" stroke-width="' + st[2] + '" stroke-linejoin="round"' + (pvSt.dash ? ' stroke-dasharray="5 4"' : '') + '/>';
+        return s;
+      }
+      var pvk;
+      if (pv.fire){
+        for (pvk in pv.env) { var ep = pvk.split(','); out += pvPoly(+ep[0], +ep[1], pvSt.env); }
+        for (pvk in pv.band) { var bp = pvk.split(','); out += pvPoly(+bp[0], +bp[1], pvSt.band); }
+      } else {
+        for (pvk in pv.move) { var mvp = pvk.split(','); out += pvPoly(+mvp[0], +mvp[1], pvSt.env); }
+      }
     }
   }
   var nowMs = Date.now();
@@ -2460,7 +2578,7 @@ function unitAction(act){
       var prevOwner = p.owner;
       p.owner = 'P'; p.capUnit = 0; p.capPts = 0;
       log('Blue captures the ' + propName(p.kind, prevOwner) + '.');
-      if (!wasHQ) sfx('capturewin');
+      if (!wasHQ){ if (isArtifactKind(p.kind)) sfx('artifactwin'); else sfx('capturewin'); }
       if (isArtifactKind(p.kind)){ setArtifactAllegiance(u.c, u.r, 'P'); queueFlareFx(u.c, u.r); log(artifactCaptureLog(p.kind, 'P')); }
       flashHexes.push({ c: u.c, r: u.r, t: Date.now() });
       setTimeout(function(){ render(); }, 950);
@@ -2576,6 +2694,48 @@ function artifactReadoutHtml(prop){
     (roDetailOpen ? '<br /><span class="ro-note">' + lore + '</span>' : '');
 }
 var roDetailOpen = false, roKeepDetail = false, roHex = null;
+/* Terrain values block: every explored hex's readout carries the
+   hex's gameplay values in the default view — defense exactly as
+   defStarsAt charges a ground defender (stars, at 10% per star),
+   movement cost per movement class read straight out of MOVECOST
+   through moveCostAt (the one table the highlight, pathing,
+   tap-to-close and the CPU all share), and one short special-rules
+   line. Property hexes use their property defense and the shared
+   'prop' movement row (cost 1 for every class), and their special
+   line carries income, production or healing as the kind applies;
+   artifacts keep their own role line from artifactReadoutHtml. */
+var MOVE_CLASS_LABELS = [['Foot','foot'],['Wheeled','wheels'],['Tracked','treads'],['Low air','lowair'],['High air','air']];
+function moveCostTxt(c, r){
+  var parts = [];
+  for (var i = 0; i < MOVE_CLASS_LABELS.length; i++){
+    var cost = moveCostAt(c, r, MOVE_CLASS_LABELS[i][1]);
+    parts.push(MOVE_CLASS_LABELS[i][0] + ' ' + (cost >= 99 ? 'Impassable' : cost));
+  }
+  return parts.join(' · ');
+}
+function defensePhrase(def){
+  return 'defense ' + (def > 0 ? '★'.repeat(def) : '0 stars') + ' · −' + (def * 10) + '% damage taken';
+}
+function terrainSpecialLine(c, r){
+  var tt = terrainMap[key(c, r)];
+  if (tt === 'forest') return 'Hides units from sight unless an enemy is adjacent; blocks sight lines.';
+  if (tt === 'hills') return 'Blocks sight lines; indirect and siege weapons gain +1 range from high ground.';
+  if (tt === 'mountain') return 'Blocks sight lines; vehicles and low air cannot enter.';
+  if (tt === 'dense') return 'Impassable to every ship; blocks sight lines.';
+  if (tt === 'water') return 'No defense; vehicles cannot enter — foot wades at cost 3; flyers cross freely.';
+  if (tt === 'bridge') return 'Bridge crossing — cost 1 for every ground class; the only ground crossing over water.';
+  if (tt === 'road') return 'Fast going — cost 1 for every ground class.';
+  if (tt === 'plains') return 'Open ground; no cover, no special rules.';
+  return '';
+}
+function propSpecialLine(kind){
+  var inc = PROPS[kind].income;
+  if (kind === 'hq') return 'Income +' + inc + '/turn · capturing the enemy headquarters wins the battle · its owner\u2019s units standing here recover +2 HP at their turn start.';
+  if (kind === 'factory') return 'Income +' + inc + '/turn · produces new units for its owner · its owner\u2019s units standing here recover +2 HP at their turn start.';
+  if (kind === 'city') return 'Income +' + inc + '/turn · its owner\u2019s units standing here recover +2 HP at their turn start.';
+  if (kind === 'relay') return 'Income +' + inc + '/turn · objective hex — holding the relay wins the battle on this board.';
+  return 'Income +' + inc + '/turn.';
+}
 function describeHex(c, r){
   if (!roKeepDetail) roDetailOpen = false;
   roKeepDetail = false;
@@ -2583,7 +2743,9 @@ function describeHex(c, r){
   showReadout();
   var pk = key(c, r);
   if (!G.explored[pk]){
+    rangePreviewEnt = null;
     readoutEl.innerHTML = '<div class="ro-terrain"><span class="tname">Unexplored table</span><br /><span class="ro-note">Nothing here has been scouted yet — the fog gives nothing away.</span></div>';
+    if (hlSvg) renderHighlights();
     frameHex(c, r);
     return;
   }
@@ -2591,7 +2753,9 @@ function describeHex(c, r){
   var terr;
   if (G.props[pk]){
     var p = G.props[pk];
-    terr = '<span class="tname">' + tName + '</span> · owner: ' + propOwnerText(pk) + ' · income ' + PROPS[p.kind].income + '/turn · defense −' + (PROPS[p.kind].def * 10) + '% damage taken';
+    terr = '<span class="tname">' + tName + '</span> · owner: ' + propOwnerText(pk) + ' · ' + defensePhrase(PROPS[p.kind].def);
+    terr += '<br /><span class="ro-note">Move cost: ' + moveCostTxt(c, r) + '</span>';
+    if (!isArtifactKind(p.kind)) terr += '<br /><span class="ro-note">' + propSpecialLine(p.kind) + '</span>';
     if (p.capUnit){
       var capU = unitById(p.capUnit);
       var capTl = capU ? captureTurnsLeft(capU, p.capPts) : Math.max(1, Math.ceil((20 - p.capPts) / 10));
@@ -2602,20 +2766,10 @@ function describeHex(c, r){
     }
   } else {
     var tt = terrainMap[pk];
-    terr = '<span class="tname">' + tName + '</span> · defense −' + ((TERRAIN[tt] ? TERRAIN[tt].def : 0) * 10) + '% damage taken';
-    var fx = '';
-    var bfx = boardDef().terrainFx || {};
-    if (tt === 'water') fx = bfx.water || 'Impassable to ground units — only bridges cross it; copters and drones fly over freely. No cover.';
-    else if (tt === 'bridge') fx = 'A bridge over the water: road going (cost 1 for wheels and treads) — the only ground crossing.';
-    else if (tt === 'dense') fx = 'A dense asteroid cluster: impassable to every ship, and it blocks sight lines.';
-    else if (tt === 'forest' && bfx.forest) fx = bfx.forest;
-    else if (tt === 'forest') fx = 'Hides units from sight unless an enemy is adjacent; blocks sight lines; foot cost 1, wheels 3.';
-    else if (tt === 'hills' && bfx.hills) fx = bfx.hills;
-    else if (tt === 'hills') fx = 'Blocks sight lines; indirect and siege weapons gain +1 range from high ground; foot cost 2.';
-    else if (tt === 'mountain') fx = 'Blocks sight lines; vehicles cannot enter; foot cost 2.';
-    else if (tt === 'road') fx = 'Fast going for wheels and treads (cost 1).';
-    else fx = 'Open ground; no cover.';
-    terr += '<br /><span class="ro-note">' + fx + '</span>';
+    terr = '<span class="tname">' + tName + '</span> · ' + defensePhrase(TERRAIN[tt] ? TERRAIN[tt].def : 0);
+    terr += '<br /><span class="ro-note">Move cost: ' + moveCostTxt(c, r) + '</span>';
+    var fx = terrainSpecialLine(c, r);
+    if (fx) terr += '<br /><span class="ro-note">' + fx + '</span>';
   }
   var unitHtml = '';
   var tw = towerAt(c, r);
@@ -2633,9 +2787,25 @@ function describeHex(c, r){
     var u = unitAt(c, r);
     if (u && (u.side === 'P' || unitVisibleTo(u, 'P', visNow, penP))) unitHtml = unitReadoutHtml(u, c, r);
   }
+  /* Range preview follows this inspection: the selected entity on
+     this hex wins, then a manned tower, then the visible occupant —
+     all under the same visibility rules as the occupant block above,
+     so a fog-hidden enemy sets no preview and shows no range. */
+  var pvEnt = null;
+  if (selTurret && selTurret.c === c && selTurret.r === r) pvEnt = selTurret;
+  else if (selUnit && selUnit.c === c && selUnit.r === r && !selUnit.garr) pvEnt = selUnit;
+  else if (tw && tw.garrison) pvEnt = tw;
+  else if (!tw){
+    var pu = unitAt(c, r);
+    if (pu && (pu.side === 'P' || unitVisibleTo(pu, 'P', visNow, penP))) pvEnt = pu;
+  }
+  rangePreviewEnt = pvEnt;
+  var pvLineEnt = pvEnt || tw;
+  if (pvLineEnt && unitHtml) unitHtml += '<br /><span class="ro-note">' + rangeStateLine(pvLineEnt) + '</span>';
   if (pendingForecast && pendingForecast.def && pendingForecast.def.c === c && pendingForecast.def.r === r && dodgeApplies(pendingForecast.att, pendingForecast.def))
     unitHtml += '<br /><span class="ro-note">Airborne evasion: this shot has a 25% chance to miss entirely — the damage ghost shows the hit if it lands. Anti-air fire never misses this way.</span>';
   readoutEl.innerHTML = '<div class="ro-terrain">' + terr + '</div>' + (unitHtml ? '<div class="ro-unit">' + unitHtml + '</div>' : '');
+  if (hlSvg) renderHighlights();
   frameHex(c, r);
 }
 /* One player move, executed exactly once however it was ordered —
@@ -2679,6 +2849,7 @@ function performMove(u, dc, dr, onArrive){
   animateTravel(u, fromC, fromR, dc, dr, travelPath, false, function(){
     busy = false;
     selUnit = u;
+    rangePreviewEnt = u;
     if (onArrive && onArrive(u)){ saveGame(); return; }
     if (maybeAutoWait(u)){ afterAction(); return; }
     render(); saveGame();
@@ -2912,6 +3083,7 @@ document.addEventListener('click', function(ev){
 
 /* ---------------- Factory production ---------------- */
 function openFactory(c, r){
+  rangePreviewEnt = null;
   var fcard = document.getElementById('factoryCard');
   var fkind = G.props[key(c, r)] ? G.props[key(c, r)].kind : 'factory';
   var html = '<h3>' + propName(fkind) + ' — build a unit (funds ' + G.funds.P + ')</h3><div class="unitgrid">';
@@ -3022,7 +3194,7 @@ function turretPhase(){
     var tSnapA = fxSnap(tur), tSnapD = fxSnap(best);
     var tDelay = sfxWeapon(tur, 0.9);
     var tKilled = applyDamage(tur, best, dmg);
-    sfxImpact(dmg, tKilled, tDelay, false, deathKindOf(tSnapD), deathScaleOf(tSnapD), 0.9);
+    sfxImpact(dmg, tKilled, tDelay, false, deathKindOf(tSnapD), deathScaleOf(tSnapD), 0.9, snapFaction(tSnapD));
     queueShotFx(tSnapA, tSnapD, dmg, tKilled, tDelay, false);
   }
 }
@@ -3472,7 +3644,7 @@ function cpuCapture(u){
     var prevOwner2 = p.owner;
     p.owner = 'E'; p.capUnit = 0; p.capPts = 0;
     log('Red captures the ' + propName(p.kind, prevOwner2) + '.');
-    if (p.kind !== 'hq') sfx('capturelose');
+    if (p.kind !== 'hq'){ if (isArtifactKind(p.kind)) sfx('artifactlose'); else sfx('capturelose'); }
     if (isArtifactKind(p.kind)){ setArtifactAllegiance(u.c, u.r, 'E'); queueFlareFx(u.c, u.r); log(artifactCaptureLog(p.kind, 'E')); }
     if (p.kind === 'hq') endGame('E', 'Your HQ has fallen to the red army.', 'hq');
     if (p.kind === 'relay') G.relayHold.E = 0;
@@ -3781,16 +3953,20 @@ function sfx(kind){
   else if (kind === 'fire'){ wCrack(t, 0.30, 1600, 1); wNoise(t, 0.14, { f0: 1300, f1: 300, gain: 0.16 }); }
   else if (kind === 'boom'){ sfxImpact(8, false, 0, false); }
   else if (kind === 'launch'){
-    /* Drone launch: a soft electric whir — detuned sines spinning up
-       under a faint band of rotor air. The drone is unarmed; this and
-       'whir' are its whole voice. */
-    wTone(t, 0.34, { type: 'sine', f0: 330, f1: 740, gain: 0.075, atk: 0.10 });
-    wTone(t, 0.34, { type: 'triangle', f0: 662, f1: 1480, gain: 0.034, atk: 0.10 });
-    wNoise(t, 0.30, { ft: 'bandpass', f0: 2300, f1: 3600, q: 4, gain: 0.028, atk: 0.08 });
+    /* Drone launch — ROBOTIC: servo ticks as the mount releases,
+       a square drive spool and banded rotor air. A machine waking,
+       not a smooth toy whir; the old detuned sine spin-up is gone. */
+    wNoise(t, 0.04, { ft: 'bandpass', f0: 1700, q: 4, gain: 0.09 });
+    wNoise(t + 0.07, 0.04, { ft: 'bandpass', f0: 1400, q: 4, gain: 0.07 });
+    wTone(t + 0.05, 0.30, { type: 'square', f0: 92, f1: 148, gain: 0.035, atk: 0.08 });
+    wTone(t + 0.05, 0.30, { type: 'sine', f0: 184, f1: 296, gain: 0.05, atk: 0.08 });
+    wNoise(t + 0.05, 0.30, { ft: 'bandpass', f0: 2100, f1: 3200, q: 3, gain: 0.026, atk: 0.08 });
   }
   else if (kind === 'whir'){
-    wTone(t, 0.22, { type: 'sine', f0: 540, f1: 680, gain: 0.045, atk: 0.05 });
-    wNoise(t, 0.20, { ft: 'bandpass', f0: 2800, f1: 3300, q: 5, gain: 0.020, atk: 0.05 });
+    /* Drone servo tick (short form of the launch voice). */
+    wNoise(t, 0.04, { ft: 'bandpass', f0: 1650, q: 4, gain: 0.07 });
+    wTone(t, 0.14, { type: 'square', f0: 110, f1: 150, gain: 0.025, atk: 0.03 });
+    wNoise(t, 0.14, { ft: 'bandpass', f0: 2400, f1: 3000, q: 4, gain: 0.016, atk: 0.03 });
   }
   else if (kind === 'heal'){
     /* Property repairs: a soft two-note chime, the kind counterpart
@@ -3831,6 +4007,32 @@ function sfx(kind){
     AU.capLose = (AU.capLose || 0) + 1;
     st(220, 0.22, 'triangle', 0.07);
     setTimeout(function(){ if (AU.ctx){ var t4 = AU.ctx.currentTime; var o = AU.ctx.createOscillator(), g = AU.ctx.createGain(); o.type = 'triangle'; o.frequency.value = 174.61; g.gain.setValueAtTime(0.07, t4); g.gain.exponentialRampToValueAtTime(0.0001, t4 + 0.3); o.connect(g); g.connect(AU.sfxBus); o.start(t4); o.stop(t4 + 0.32); } }, 130);
+  }
+  else if (kind === 'artifactwin'){
+    /* ARTIFACT ACTIVATION (the player captures any artifact) —
+       ALIEN: a low energy hum swelling up, soft teal chime
+       harmonics and an ionized shimmer. No brass, no arcade
+       tones; the capturewin sting is for ordinary property only.
+       Gyre and Spire activations use this same alien voice. */
+    AU.artWin = (AU.artWin || 0) + 1;
+    wTone(t, 0.85, { type: 'sine', f0: 55, f1: 82, gain: 0.10, atk: 0.30 });
+    wTone(t, 0.85, { type: 'sine', f0: 110, f1: 165, gain: 0.05, atk: 0.30 });
+    wNoise(t, 0.80, { ft: 'bandpass', f0: 600, f1: 2600, q: 2, gain: 0.030, atk: 0.35 });
+    setTimeout(function(){ if (!AU.ctx) return; var tt = AU.ctx.currentTime;
+      wTone(tt, 0.50, { type: 'sine', f0: 880, gain: 0.035, atk: 0.06 });
+      wTone(tt + 0.12, 0.55, { type: 'sine', f0: 1318.5, gain: 0.022, atk: 0.06 });
+    }, 240);
+  }
+  else if (kind === 'artifactlose'){
+    /* AN ARTIFACT LOST to the enemy — ALIEN, inverted: the hum
+       sinks and a dull low chime answers. Never a victory motif. */
+    AU.artLose = (AU.artLose || 0) + 1;
+    wTone(t, 0.80, { type: 'sine', f0: 98, f1: 58, gain: 0.09, atk: 0.05 });
+    wTone(t, 0.80, { type: 'sine', f0: 196, f1: 117, gain: 0.04, atk: 0.05 });
+    wNoise(t, 0.60, { ft: 'bandpass', f0: 1800, f1: 500, q: 2, gain: 0.025, atk: 0.04 });
+    setTimeout(function(){ if (!AU.ctx) return; var tt = AU.ctx.currentTime;
+      wTone(tt, 0.45, { type: 'sine', f0: 587.33, gain: 0.026, atk: 0.05 });
+    }, 200);
   }
   else if (kind === 'winrout'){
     /* ROUT victory: the heaviest cue — a martial brass figure rising
@@ -3952,7 +4154,12 @@ function sfx(kind){
    soft compressor/limiter before the master gain, so layered
    peaks and CPU volleys cannot clip. Per-shot rate jitter
    (0.94–1.06) humanizes repeated fire without wild randomness.
-   AU.shots counts routine invocations per class (dev assertion). */
+   AU.shots counts routine invocations per class (dev assertion).
+   SOUND REVIEW PASS (Mix by Faction): every voice below was
+   inventoried for cartoon traits — pitched whistles, pew bursts,
+   springy envelopes, arcade pops — and rebuilt warlike: human
+   units MILITARY, alien units and artifacts ALIEN, towers and
+   machines ROBOTIC (see weaponFaction / sfxWeaponAlien). */
 function auNoiseBuffer(){
   if (AU.noiseBuf) return AU.noiseBuf;
   var len = Math.floor(AU.ctx.sampleRate * 1.2), buf = AU.ctx.createBuffer(1, len, AU.ctx.sampleRate);
@@ -4053,6 +4260,16 @@ function startTravelSound(u, durSec, vol, steps){
       if (kind === 'mech'){
         wTone(tt, 0.16, { f0: 95, f1: 38, gain: 0.30 * V });
         wNoise(tt, 0.10, { f0: 500, f1: 140, gain: 0.16 * V, grit: true });
+        wNoise(tt + 0.03, 0.03, { ft: 'bandpass', f0: 1250, q: 4, gain: 0.05 * V });
+      } else if (kind === 'skitter'){
+        /* Alien foot steps: paired dry chitin clicks, no tone. */
+        wNoise(tt, 0.03, { ft: 'bandpass', f0: 2500, q: 5, gain: 0.08 * V });
+        wNoise(tt + 0.025, 0.03, { ft: 'bandpass', f0: 1900, q: 5, gain: 0.06 * V });
+      } else if (kind === 'behemoth'){
+        /* Alien heavy steps: an organic ground thud and a gritty
+           carapace shift per stride. */
+        wTone(tt, 0.20, { f0: 68, f1: 30, gain: 0.26 * V });
+        wNoise(tt, 0.12, { f0: 420, f1: 120, gain: 0.14 * V, grit: true });
       } else if (kind === 'cmd'){
         wNoise(tt, 0.07, { ft: 'bandpass', f0: 1900, q: 2, gain: 0.10 * V });
         wTone(tt, 0.09, { type: 'triangle', f0: 300, f1: 180, gain: 0.07 * V });
@@ -4063,7 +4280,41 @@ function startTravelSound(u, durSec, vol, steps){
     }
   }
   var stepInterval = (steps && steps > 0) ? dur / steps : 0.22;
-  if (cls === 'copter'){
+  var alienTravel = isAlienAttacker(u);
+  AU.lastTravelFac = alienTravel ? 'alien' : (cls === 'drone' || cls === 'tower' ? 'robotic' : 'military');
+  if (alienTravel && cls === 'infantry'){
+    /* Skitter travel: pure skittering — rapid chitin clicks. */
+    stepSounds('skitter', Math.max(2, (steps || 2) * 2), stepInterval / 2);
+  } else if (alienTravel && cls === 'mech'){
+    /* Burrower travel: a burrowing rumble — low churn under
+       heavy organic thuds as it shoulders the ground aside. */
+    loopOsc('sine', 46, 0.12 * V);
+    loopNoise(150, 0.16 * V);
+    stepSounds('behemoth', steps, stepInterval);
+  } else if (alienTravel && cls === 'recon'){
+    /* Stalker travel: quiet, fast skitter under a faint air band. */
+    loopNoise(900, 0.030 * V, 'bandpass');
+    stepSounds('skitter', Math.max(2, (steps || 2) * 2), stepInterval / 2);
+  } else if (alienTravel && cls === 'tank'){
+    /* Behemoth travel: a slow organic tread — sub body tone, low
+       wash, and a ground thud per stride. */
+    loopOsc('sine', 40, 0.14 * V);
+    loopNoise(170, 0.13 * V);
+    stepSounds('behemoth', steps, stepInterval);
+  } else if (alienTravel && cls === 'arty'){
+    /* Spitter travel: a wet slither — banded wash, low body tone,
+       and periodic wet squelches as it drags itself along. */
+    loopOsc('sine', 52, 0.08 * V);
+    loopNoise(520, 0.10 * V, 'bandpass');
+    var sqn = Math.max(2, Math.round(dur / 0.34));
+    for (var sqi = 0; sqi < sqn; sqi++) wNoise(t + 0.05 + sqi * 0.34, 0.12, { ft: 'bandpass', f0: 640, f1: 300, q: 2, gain: 0.07 * V });
+  } else if (alienTravel && cls === 'copter'){
+    /* Shrieker travel: wing wash and body tone; one brief, low
+       cry at departure, kept well under the mix. */
+    loopOsc('sawtooth', 76, 0.05 * V);
+    loopNoise(650, 0.12 * V);
+    wTone(t + 0.05, 0.40, { type: 'sawtooth', f0: 1050, f1: 820, gain: 0.018 * V });
+  } else if (cls === 'copter'){
     /* Rotor chop: noise through a gain chopped by a ~13Hz square LFO,
        plus a low body thump. Slight rise at takeoff via tg ramp. */
     var src = ctx.createBufferSource(); src.buffer = auNoiseBuffer(); src.loop = true;
@@ -4094,16 +4345,23 @@ function startTravelSound(u, durSec, vol, steps){
     loopOsc('sawtooth', 74, 0.10 * V);
     loopNoise(420, 0.09 * V);
   } else if (cls === 'mech'){
-    loopOsc('sine', 880, 0.018 * V);
+    /* The old constant 880Hz servo whine looped audibly and read
+       as a toy hum; the mech's travel is its footstep thuds and
+       per-step servo ticks alone now. */
     stepSounds('mech', steps, stepInterval);
   } else if (cls === 'cmd'){
-    loopOsc('sine', 1180, 0.016 * V);
+    /* Same fix for Wren: no constant 1180Hz whine — powered-armor
+       steps and servo ticks only. */
     stepSounds('cmd', steps, stepInterval);
   } else if (cls === 'drone'){
-    loopOsc('sine', 640, 0.05 * V);
-    var o2 = loopOsc('triangle', 1280, 0.022 * V);
-    try { o2.frequency.linearRampToValueAtTime(1420, t + dur); } catch (e) {}
-    loopNoise(3000, 0.018 * V, 'bandpass');
+    /* ROBOTIC servo flight: a low square drive hum, a sine body
+       tone, banded rotor air and periodic servo ticks — a machine
+       in the air, not a smooth toy whir. */
+    loopOsc('square', 88, 0.020 * V);
+    loopOsc('sine', 176, 0.028 * V);
+    loopNoise(2100, 0.020 * V, 'bandpass');
+    var dn = Math.max(2, Math.round(dur / 0.3));
+    for (var di = 0; di < dn; di++) wNoise(t + 0.08 + di * 0.3, 0.03, { ft: 'bandpass', f0: 1650, q: 4, gain: 0.05 * V });
   } else {
     /* infantry and any other foot class */
     stepSounds('infantry', steps, stepInterval);
@@ -4119,6 +4377,125 @@ function startTravelSound(u, durSec, vol, steps){
     } catch (e) {}
   } };
 }
+/* ============ Mixed-palette factions (sound review pass) ============
+   The user picked MIX BY FACTION after hearing samples: human units
+   sound MILITARY (real-weapon language), alien units and the
+   artifacts sound ALIEN (plasma / bio-electric), and towers and
+   machines lean ROBOTIC (servos, pneumatics, hard mechanical
+   thuds). weaponFaction is the one place that decides; sfxWeapon,
+   startTravelSound and the kill voices all read it, so a unit can
+   never attack in one palette and die in another. */
+function isAlienAttacker(att){
+  if (!att || !G || G.board !== 6 || att.side !== 'E') return false;
+  var base = SHIP_ANALOG[att.type] || att.type;
+  return !!ALIEN_NAMES[base];
+}
+function weaponFaction(att){
+  if (!att) return 'military';
+  if (att.tower || att.type === 'tower') return 'robotic';
+  if (att.type === 'turret' || att.type === 'gyre' || att.type === 'spire') return 'alien';
+  if (att.type === 'drone') return 'robotic';
+  if (isAlienAttacker(att)) return 'alien';
+  return 'military';
+}
+/* Same decision for a pre-damage FX snapshot (fxSnap carries type
+   and side), used to route kill voices by the VICTIM's faction. */
+function snapFaction(d){
+  if (!d) return 'military';
+  if (d.tower || d.type === 'tower') return 'robotic';
+  if (d.type === 'turret' || d.type === 'gyre' || d.type === 'spire') return 'alien';
+  if (d.type === 'drone') return 'robotic';
+  if (d.side === 'E' && G && G.board === 6 && ALIEN_NAMES[d.type]) return 'alien';
+  return 'military';
+}
+/* ALIEN weapon voices — plasma and bio-electric language. Charge
+   whines are short, low in the mix and always layered with noise;
+   nothing here is a bare pitched slide, and no voice loops or
+   bounces. Returns the seconds until the shot lands. */
+function sfxWeaponAlien(cls, t, R, V){
+  var i, tt;
+  if (cls === 'infantry'){
+    /* Skitter: chitin snaps — four dry carapace clicks over a wet
+       little thump. */
+    for (i = 0; i < 4; i++){ tt = t + i * 0.07 / R;
+      wNoise(tt, 0.035, { ft: 'bandpass', f0: (2100 - i * 160) * R, q: 6, gain: 0.20 * V });
+      wNoise(tt, 0.05, { f0: 900, f1: 300, gain: 0.10 * V });
+    }
+    wTone(t, 0.12, { f0: 130, f1: 60, gain: 0.14 * V });
+    return 0.12;
+  }
+  if (cls === 'mech'){
+    /* Burrower: a burrowing bio-cannon — sub pulse, chitin crack,
+       gritty plasma wash. */
+    wTone(t, 0.30, { f0: 84, f1: 30, gain: 0.34 * V });
+    wNoise(t, 0.28, { f0: 1500, f1: 180, gain: 0.30 * V, grit: true });
+    wNoise(t + 0.02, 0.06, { ft: 'bandpass', f0: 1750 * R, q: 4, gain: 0.14 * V });
+    wNoise(t + 0.10, 0.22, { ft: 'highpass', f0: 3400, gain: 0.06 * V });
+    return 0.16;
+  }
+  if (cls === 'recon'){
+    /* Stalker: needle spits — five short pressurized darts, all
+       noise, spat fast. */
+    for (i = 0; i < 5; i++){ tt = t + i * 0.055 / R;
+      wNoise(tt, 0.06, { ft: 'bandpass', f0: 2500 * R, f1: 900 * R, q: 2.5, gain: 0.16 * V });
+      wNoise(tt, 0.03, { ft: 'highpass', f0: 3800, gain: 0.06 * V });
+    }
+    return 0.14;
+  }
+  if (cls === 'tank'){
+    /* Behemoth: deep bio-cannon — a short charge whine buried in
+       noise, then a huge wet discharge and a sub thump. */
+    wTone(t, 0.22, { type: 'sawtooth', f0: 140 * R, f1: 520 * R, gain: 0.035 * V, atk: 0.16 });
+    wNoise(t, 0.22, { ft: 'bandpass', f0: 420 * R, f1: 1900 * R, q: 2, gain: 0.05 * V, atk: 0.14 });
+    tt = t + 0.24;
+    wNoise(tt, 0.55, { f0: 2100, f1: 90, gain: 0.46 * V, grit: true });
+    wTone(tt, 0.58, { f0: 74, f1: 24, gain: 0.46 * V });
+    wNoise(tt + 0.06, 0.30, { ft: 'highpass', f0: 3200, gain: 0.07 * V });
+    return 0.28;
+  }
+  if (cls === 'arty'){
+    /* Spitter: acid lob — a wet launch, a noise-only arc, and an
+       impact that SIZZLES: acid eating hull over a low thump. */
+    wNoise(t, 0.20, { ft: 'bandpass', f0: 500 * R, f1: 1700 * R, q: 2, gain: 0.16 * V, atk: 0.04 });
+    wTone(t, 0.22, { f0: 96, f1: 40, gain: 0.20 * V });
+    wNoise(t + 0.22, 0.42, { ft: 'bandpass', f0: 2000 * R, f1: 800 * R, q: 2, gain: 0.035 * V, atk: 0.10 });
+    tt = t + 0.72;
+    wTone(tt, 0.50, { f0: 84, f1: 26, gain: 0.34 * V });
+    wNoise(tt, 0.30, { f0: 1300, f1: 160, gain: 0.30 * V, grit: true });
+    wNoise(tt + 0.04, 0.62, { ft: 'highpass', f0: 4200, gain: 0.10 * V });
+    for (i = 0; i < 4; i++) wNoise(tt + 0.10 + i * 0.13, 0.07, { ft: 'bandpass', f0: (2600 - i * 420) * R, q: 5, gain: 0.07 * V });
+    return 0.72;
+  }
+  if (cls === 'copter'){
+    /* Shrieker: alien air voice — wing-chop noise and plasma
+       spits, with the namesake screech kept LOW in the mix, a
+       texture under the weapon, never the headline. */
+    for (i = 0; i < 6; i++) wNoise(t + i * 0.06, 0.03, { ft: 'bandpass', f0: 1050, q: 2, gain: 0.07 * V });
+    wTone(t + 0.02, 0.30, { type: 'sawtooth', f0: 1150 * R, f1: 860 * R, gain: 0.022 * V });
+    for (i = 0; i < 3; i++){ tt = t + 0.05 + i * 0.12 / R;
+      wNoise(tt, 0.14, { ft: 'bandpass', f0: 2600 * R, f1: 300, q: 1.4, gain: 0.24 * V, grit: true });
+      wTone(tt, 0.14, { f0: 120, f1: 48, gain: 0.16 * V });
+    }
+    return 0.20;
+  }
+  if (cls === 'turret'){
+    /* Monolith Array — ALIEN heavy plasma: a charge whine layered
+       in noise, a fat plasma discharge, a sub thump and an
+       ionized sizzle tail. */
+    wTone(t, 0.34, { type: 'sawtooth', f0: 180 * R, f1: 720 * R, gain: 0.045 * V, atk: 0.26 });
+    wNoise(t, 0.34, { ft: 'bandpass', f0: 500 * R, f1: 2400 * R, q: 2.5, gain: 0.05 * V, atk: 0.24 });
+    tt = t + 0.36;
+    wNoise(tt, 0.42, { ft: 'bandpass', f0: 2900 * R, f1: 220, q: 1.2, gain: 0.40 * V, grit: true });
+    wTone(tt, 0.44, { f0: 96, f1: 30, gain: 0.38 * V });
+    wNoise(tt + 0.05, 0.38, { ft: 'highpass', f0: 3600, gain: 0.09 * V });
+    wNoise(tt + 0.14, 0.30, { ft: 'bandpass', f0: 1500 * R, q: 3, gain: 0.06 * V });
+    return 0.40;
+  }
+  /* Any other alien hull: a generic plasma burst. */
+  wNoise(t, 0.20, { ft: 'bandpass', f0: 2400 * R, f1: 260, gain: 0.30 * V, grit: true });
+  wTone(t, 0.22, { f0: 110, f1: 42, gain: 0.24 * V });
+  return 0.14;
+}
 /* Fire the attacker's own weapon. Returns the seconds until the
    shot lands, so doAttack can time the impact sound. */
 function sfxWeapon(att, vol){
@@ -4128,6 +4505,8 @@ function sfxWeapon(att, vol){
   var t = AU.ctx.currentTime + 0.01;
   var R = 0.94 + Math.random() * 0.12, V = vol || 1, i, tt;
   AU.shots[cls] = (AU.shots[cls] || 0) + 1; AU.lastWeapon = cls;
+  var fac = weaponFaction(att); AU.lastFaction = fac;
+  if (fac === 'alien') return sfxWeaponAlien(cls, t, R, V);
   if (cls === 'infantry'){
     for (i = 0; i < 3; i++) wCrack(t + i * 0.095 / R, 0.30 * V, 1750, R);
     return 0.14;
@@ -4148,21 +4527,27 @@ function sfxWeapon(att, vol){
     return 0.30;
   }
   if (cls === 'recon'){
-    for (i = 0; i < 5; i++){ tt = t + i * 0.06 / R;
-      wTone(tt, 0.07, { type: 'square', f0: 980 * R, f1: 420 * R, gain: 0.12 * V });
-      wNoise(tt, 0.04, { ft: 'bandpass', f0: 2600 * R, q: 2, gain: 0.09 * V });
+    /* Suppressed PDW — the old square-wave "pew" burst is deleted.
+       Five tight suppressed cracks: a crack body, a low gas thump
+       and a mechanical action tick per shot. */
+    for (i = 0; i < 5; i++){ tt = t + i * 0.062 / R;
+      wCrack(tt, 0.20 * V, 1150, R);
+      wNoise(tt, 0.05, { f0: 700, f1: 240, gain: 0.10 * V });
+      wNoise(tt + 0.012, 0.03, { ft: 'bandpass', f0: 1500 * R, q: 2.5, gain: 0.05 * V });
     }
     return 0.16;
   }
   if (cls === 'tank'){
-    /* Railgun: a rising charge zip, then the crack-boom. */
-    wTone(t, 0.20, { type: 'sawtooth', f0: 160 * R, f1: 2300 * R, gain: 0.055 * V, atk: 0.17 });
-    wNoise(t, 0.20, { ft: 'bandpass', f0: 500 * R, f1: 3800 * R, q: 3, gain: 0.045 * V, atk: 0.15 });
-    tt = t + 0.20 / R;
-    wNoise(tt, 0.34, { f0: 3400, f1: 160, gain: 0.44 * V, grit: true });
-    wTone(tt, 0.40, { f0: 130, f1: 34, gain: 0.40 * V });
-    wNoise(tt, 0.06, { ft: 'highpass', f0: 4000, gain: 0.16 * V });
-    return 0.26;
+    /* Tank cannon: a brief capacitor spool kept low under a
+       mechanical breech clank, then the crack-boom does the
+       talking — a gun, not a ray. */
+    wTone(t, 0.14, { type: 'sawtooth', f0: 220 * R, f1: 1400 * R, gain: 0.028 * V, atk: 0.10 });
+    wNoise(t + 0.02, 0.05, { ft: 'bandpass', f0: 900 * R, q: 3, gain: 0.10 * V });
+    tt = t + 0.15 / R;
+    wNoise(tt, 0.36, { f0: 3400, f1: 150, gain: 0.46 * V, grit: true });
+    wTone(tt, 0.42, { f0: 128, f1: 32, gain: 0.42 * V });
+    wNoise(tt, 0.06, { ft: 'highpass', f0: 4000, gain: 0.15 * V });
+    return 0.22;
   }
   if (cls === 'mtank'){
     wNoise(t, 0.65, { f0: 1100, f1: 90, gain: 0.48 * V, grit: true, echo: 0.16 });
@@ -4178,20 +4563,25 @@ function sfxWeapon(att, vol){
     return 0.34;
   }
   if (cls === 'arty'){
-    /* Distant howitzer: muzzle boom, the shell whistling in, then
-       the impact lands at +0.78 (its boom is part of this routine;
+    /* MILITARY HOWITZER (the approved direction): muzzle crack,
+       deep boom, long rumble with a distant echo. The old pitched
+       incoming-shell WHISTLE is deleted outright — the shell's
+       flight is a noise-based air tear only, never a tone. The
+       impact lands at +0.82 (its boom is part of this routine;
        sfxImpact adds scale and debris on top). */
-    wNoise(t, 0.50, { f0: 420, f1: 80, gain: 0.32 * V, grit: true });
-    wTone(t, 0.50, { f0: 82, f1: 30, gain: 0.30 * V });
-    wTone(t + 0.18, 0.55, { type: 'sine', f0: 1500 * R, f1: 420 * R, gain: 0.05 * V, atk: 0.10 });
-    tt = t + 0.78;
-    wNoise(tt, 0.95, { f0: 1500, f1: 70, gain: 0.48 * V, grit: true, echo: 0.28 });
-    wTone(tt, 0.95, { f0: 92, f1: 24, gain: 0.48 * V });
-    return 0.78;
+    wNoise(t, 0.05, { ft: 'highpass', f0: 2800, gain: 0.20 * V });
+    wNoise(t, 0.55, { f0: 460, f1: 70, gain: 0.36 * V, grit: true });
+    wTone(t, 0.55, { f0: 78, f1: 28, gain: 0.34 * V });
+    wNoise(t + 0.16, 0.60, { ft: 'bandpass', f0: 2300 * R, f1: 640 * R, q: 1.6, gain: 0.055 * V, atk: 0.08 });
+    tt = t + 0.82;
+    wNoise(tt, 1.05, { f0: 1500, f1: 60, gain: 0.48 * V, grit: true, echo: 0.30 });
+    wTone(tt, 1.05, { f0: 88, f1: 22, gain: 0.48 * V });
+    wNoise(tt + 0.10, 1.15, { f0: 220, f1: 55, gain: 0.16 * V });
+    return 0.82;
   }
   if (cls === 'rockets'){
     for (i = 0; i < 4; i++){ tt = t + i * 0.13 / R;
-      wNoise(tt, 0.34, { ft: 'bandpass', f0: 380 * R, f1: 2600 * R, q: 2.2, gain: 0.15 * V, atk: 0.05 });
+      wNoise(tt, 0.34, { ft: 'bandpass', f0: 380 * R, f1: 2600 * R, q: 2.2, gain: 0.15 * V, atk: 0.05, grit: true });
     }
     for (i = 0; i < 3; i++){ tt = t + 0.58 + i * 0.11;
       wNoise(tt, 0.40, { f0: 1600, f1: 130, gain: 0.32 * V, grit: true });
@@ -4220,14 +4610,32 @@ function sfxWeapon(att, vol){
     return 0.52;
   }
   if (cls === 'tower'){
-    wNoise(t, 0.20, { f0: 1500, f1: 260, gain: 0.34 * V, grit: true });
-    wTone(t, 0.26, { f0: 205 * R, f1: 74, gain: 0.28 * V });
-    return 0.12;
+    /* ROBOTIC RAIL-MORTAR (the approved direction): servo clank as
+       the mount traverses, a pneumatic hiss, a hard mechanical
+       launch thud, and a short metal ring as the mount settles. */
+    wNoise(t, 0.05, { ft: 'bandpass', f0: 760 * R, q: 5, gain: 0.16 * V });
+    wTone(t, 0.05, { type: 'square', f0: 340 * R, f1: 210 * R, gain: 0.07 * V });
+    wNoise(t + 0.06, 0.05, { ft: 'bandpass', f0: 1150 * R, q: 5, gain: 0.12 * V });
+    wNoise(t + 0.10, 0.17, { ft: 'highpass', f0: 2600, gain: 0.07 * V, atk: 0.03 });
+    tt = t + 0.20;
+    wTone(tt, 0.30, { f0: 132, f1: 38, gain: 0.40 * V });
+    wNoise(tt, 0.22, { f0: 1900, f1: 240, gain: 0.30 * V, grit: true });
+    wTone(tt + 0.03, 0.34, { type: 'sine', f0: 618 * R, gain: 0.045 * V });
+    wTone(tt + 0.03, 0.26, { type: 'sine', f0: 927 * R, gain: 0.028 * V });
+    return 0.22;
   }
   if (cls === 'turret'){
-    wNoise(t, 0.24, { f0: 1100, f1: 200, gain: 0.32 * V, grit: true });
-    wTone(t, 0.30, { f0: 160 * R, f1: 58, gain: 0.28 * V });
-    return 0.14;
+    /* Unreachable in normal play — weaponFaction routes the
+       Monolith Array to the ALIEN heavy-plasma voice above. Kept
+       as the same voice so no path can fall back to a plain bang. */
+    return sfxWeaponAlien('turret', t, R, V);
+  }
+  if (cls === 'drone'){
+    /* Drone sting — ROBOTIC: a servo tick and one small hard
+       crack; a machine's popgun, kept short and dry. */
+    wNoise(t, 0.03, { ft: 'bandpass', f0: 1900 * R, q: 4, gain: 0.08 * V });
+    wCrack(t + 0.02, 0.16 * V, 1350, R);
+    return 0.10;
   }
   wCrack(t, 0.28 * V, 1500, R);
   wNoise(t, 0.16, { f0: 1200, f1: 250, gain: 0.18 * V, grit: true });
@@ -4241,28 +4649,74 @@ function sfxWeapon(att, vol){
    dev assertion): vehicles and structures get the full stack, the
    mech a mid stack, the copter a stuttering rotor and engine failure into its impact
    boom, Wren a dull thud with power-down spark crackle, infantry a
-   quiet dull thud, and the drone a small electric zap-pop. Routed
+   quiet dull thud, and the drone a brittle robotic snap. Alien
+   victims (snapFaction 'alien') die organically — chitin, plasma
+   sizzle, plasma collapse for an artifact. Routed
    through the same SFX bus and compressor as every weapon voice;
    CPU-caused kills pass the usual reduced volume. */
-function sfxKillExplosion(kind, sc, delay, vol){
+function sfxKillExplosion(kind, sc, delay, vol, fac){
   audioInit();
   if (!AU.ctx) return;
   if (!AU.kills) AU.kills = {};
   AU.kills[kind] = (AU.kills[kind] || 0) + 1;
-  AU.lastKill = kind;
+  AU.lastKill = kind; AU.lastKillFac = fac || 'military';
   var before = AU.nodes || 0;
   var t = AU.ctx.currentTime + (delay || 0.1);
   var V = (vol == null ? 1 : vol), R = 0.95 + Math.random() * 0.1, i, s = sc || 1;
+  if (fac === 'alien'){
+    /* ALIEN deaths — organic and bio-electric, held to the same
+       low, rough standard as the human deaths: no whistle, no
+       spin, no bounce. */
+    if (kind === 'infantry'){
+      /* Skitter death: chitin crunch — dry cracks and a wet snap. */
+      wNoise(t, 0.08, { ft: 'bandpass', f0: 1900 * R, q: 3, gain: 0.20 * V, grit: true });
+      wNoise(t + 0.05, 0.10, { f0: 800, f1: 200, gain: 0.14 * V });
+      wTone(t, 0.14, { f0: 110, f1: 48, gain: 0.14 * V });
+    } else if (kind === 'mech'){
+      /* Burrower death: carapace split — a big chitin crack, an
+         organic thump and a plasma sizzle as it cooks off. */
+      wNoise(t, 0.14, { ft: 'bandpass', f0: 1500 * R, q: 2.5, gain: 0.30 * V, grit: true });
+      wTone(t, 0.34, { f0: 82, f1: 28, gain: 0.30 * V });
+      wNoise(t + 0.08, 0.30, { ft: 'highpass', f0: 3800, gain: 0.08 * V });
+      for (i = 0; i < 3; i++) wNoise(t + 0.14 + i * 0.10, 0.06, { ft: 'bandpass', f0: (1700 - i * 300) * R, q: 4, gain: 0.09 * V });
+    } else if (kind === 'copter'){
+      /* Shrieker death: a wing tear and a brief, low cry under
+         the fall, then the ground thump. */
+      wNoise(t, 0.30, { ft: 'bandpass', f0: 1300 * R, f1: 500, q: 2, gain: 0.16 * V, grit: true });
+      wTone(t, 0.34, { type: 'sawtooth', f0: 980 * R, f1: 700 * R, gain: 0.020 * V });
+      wTone(t + 0.42, 0.40, { f0: 76, f1: 26, gain: 0.34 * V });
+      wNoise(t + 0.42, 0.42, { f0: 1700, f1: 120, gain: 0.32 * V, grit: true });
+    } else if (kind === 'turret'){
+      /* Artifact death — plasma collapse: the core dumps its
+         charge in crackling steps over a falling filtered roar. */
+      wNoise(t, 0.60, { ft: 'bandpass', f0: 2800 * R, f1: 240, q: 1.4, gain: 0.34 * V, grit: true });
+      wTone(t, 0.55, { f0: 88, f1: 24, gain: 0.34 * V });
+      for (i = 0; i < 5; i++) wNoise(t + 0.08 + i * 0.09, 0.05, { ft: 'bandpass', f0: (2400 - i * 380) * R, q: 4, gain: 0.10 * V });
+      wNoise(t + 0.30, 0.45, { f0: 420, f1: 90, gain: 0.12 * V });
+    } else {
+      /* Alien hull death (Behemoth, Spitter, Stalker): an organic
+         boom — sub thump, gritty blast, chitin debris, sizzle. */
+      var ab = 0.46 * (0.7 + 0.3 * s) * V;
+      wNoise(t, 0.80, { f0: 2200, f1: 70, gain: ab, grit: true });
+      wTone(t, 0.85, { f0: 80, f1: 20, gain: ab });
+      wNoise(t + 0.05, 0.45, { ft: 'highpass', f0: 3600, gain: 0.08 * V });
+      for (i = 0; i < 5; i++) wNoise(t + 0.16 + i * 0.11, 0.07, { ft: 'bandpass', f0: (1500 - i * 190) * R, q: 3, gain: (0.13 - i * 0.016) * V });
+    }
+    AU.lastKillNodes = (AU.nodes || 0) - before;
+    return;
+  }
   if (kind === 'infantry'){
     wTone(t, 0.22, { f0: 120, f1: 45, gain: 0.20 * V });
     wNoise(t, 0.14, { f0: 700, f1: 200, gain: 0.10 * V });
   } else if (kind === 'drone'){
-    /* Sharper and more brittle than before — a hard electric snap,
-       not a cute pop. */
-    wTone(t, 0.10, { type: 'square', f0: 2150, f1: 300, gain: 0.15 * V });
-    wNoise(t, 0.07, { ft: 'highpass', f0: 3200, gain: 0.12 * V });
-    wTone(t + 0.04, 0.07, { type: 'square', f0: 1250, f1: 180, gain: 0.08 * V });
-    wNoise(t + 0.09, 0.05, { ft: 'bandpass', f0: 2400 * R, q: 5, gain: 0.06 * V });
+    /* ROBOTIC drone death: a brittle airframe snap and a shower
+       of servo ticks. The old pitched zap-pop slides (two long
+       descending square tones) read as an arcade effect and are
+       deleted. */
+    wNoise(t, 0.06, { ft: 'highpass', f0: 3000, gain: 0.14 * V });
+    wNoise(t + 0.02, 0.08, { ft: 'bandpass', f0: 1500 * R, q: 3, gain: 0.12 * V, grit: true });
+    wTone(t, 0.07, { type: 'square', f0: 420, f1: 190, gain: 0.07 * V });
+    for (i = 0; i < 3; i++) wNoise(t + 0.09 + i * 0.06, 0.03, { ft: 'bandpass', f0: (1900 - i * 350) * R, q: 5, gain: 0.06 * V });
   } else if (kind === 'cmd'){
     wTone(t, 0.24, { f0: 110, f1: 42, gain: 0.22 * V });
     wNoise(t, 0.16, { f0: 800, f1: 220, gain: 0.12 * V });
@@ -4300,6 +4754,13 @@ function sfxKillExplosion(kind, sc, delay, vol){
       wNoise(t + 0.22 + Math.random() * 0.45, 0.05, { ft: 'bandpass', f0: (900 + Math.random() * 700) * R, q: 4, gain: 0.07 * V });
     }
     wNoise(t + 0.30, 0.60, { f0: 480, f1: 110, gain: 0.10 * V });
+    if (kind === 'structure'){
+      /* ROBOTIC structure garnish on the tower's death: mount
+         servos fail in steps and a metal member rings as the
+         wreck settles. */
+      for (i = 0; i < 3; i++) wNoise(t + 0.20 + i * 0.13, 0.04, { ft: 'bandpass', f0: (1200 - i * 260) * R, q: 5, gain: 0.08 * V });
+      wTone(t + 0.24, 0.30, { type: 'sine', f0: 540 * R, gain: 0.035 * V });
+    }
   }
   AU.lastKillNodes = (AU.nodes || 0) - before;
 }
@@ -4308,14 +4769,14 @@ function sfxKillExplosion(kind, sc, delay, vol){
    in the weapon routine, so the impact adds crunch and debris
    rather than a second explosion — except a kill, which always
    routes to the dedicated sfxKillExplosion for the victim's class. */
-function sfxImpact(dmg, killed, delay, boomAlready, killKind, killScale, killVol){
+function sfxImpact(dmg, killed, delay, boomAlready, killKind, killScale, killVol, killFac){
   audioInit();
   if (!AU.ctx) return;
   var t = AU.ctx.currentTime + (delay || 0.1);
   var R = 0.95 + Math.random() * 0.1, i;
   AU.shots.impact = (AU.shots.impact || 0) + 1;
   if (killed){
-    sfxKillExplosion(killKind || 'vehicle', killScale || 1, delay, killVol);
+    sfxKillExplosion(killKind || 'vehicle', killScale || 1, delay, killVol, killFac);
     return;
   }
   if (dmg >= 6){
@@ -4328,9 +4789,11 @@ function sfxImpact(dmg, killed, delay, boomAlready, killKind, killScale, killVol
     wNoise(t, 0.22, { ft: 'bandpass', f0: 1400 * R, f1: 500, q: 1.2, gain: 0.28, grit: true });
     wTone(t, 0.25, { f0: 150, f1: 60, gain: 0.22 });
   } else {
-    wTone(t, 0.09, { type: 'square', f0: 620 * R, f1: 380 * R, gain: 0.09 });
-    wTone(t, 0.07, { type: 'triangle', f0: 935 * R, f1: 700 * R, gain: 0.06 });
-    wNoise(t, 0.06, { ft: 'bandpass', f0: 2600 * R, q: 3, gain: 0.15 });
+    /* Small hit: a hard metallic clang and crunch. The old
+       two-tone pitched blip read as an arcade plink and is gone. */
+    wNoise(t, 0.07, { ft: 'bandpass', f0: 1750 * R, q: 2.5, gain: 0.20, grit: true });
+    wTone(t, 0.08, { type: 'triangle', f0: 300 * R, f1: 150 * R, gain: 0.10 });
+    wNoise(t + 0.02, 0.05, { f0: 900, f1: 300, gain: 0.08 });
   }
 }
 function bindVolume(id, keyName){
