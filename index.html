@@ -6,6 +6,17 @@
 <meta name="color-scheme" content="light dark" />
 <link rel="icon" href="data:," />
 <title>Xenofront</title>
+<!-- Board plates ship as TEXT DATA MODULES (assets/plates/board-N.js):
+     each carries its full-quality plate JPEG as a base64 data URI in
+     window.XENOFRONT_PLATES[N], bit-identical to the source plate —
+     the publish route carries UTF-8 text only and rejects binary
+     files, so the plates travel as text and the page consumes the
+     data URIs exactly as the single-file build did. No recompression. -->
+<script src="assets/plates/board-1.js"></script>
+<script src="assets/plates/board-2.js"></script>
+<script src="assets/plates/board-3.js"></script>
+<script src="assets/plates/board-4.js"></script>
+<script src="assets/plates/board-5.js"></script>
 <style>
 :root{
   --bg:#e9dfc9; --panel:#f6efdd; --panel2:#efe4c9; --ink:#2c2113; --ink-dim:#6d5c40;
@@ -388,7 +399,8 @@ footer.site{color:rgba(210,235,245,.88)}
 <div class="wrap">
   <div class="board" id="board" role="application" aria-label="Xenofront diorama battlefield">
     <div class="world" id="world">
-      <img class="plate" id="plateImg" src="assets/plates/board-1.jpg" alt="Miniature diorama battlefield: flocked grass, a model pine forest, molded hills and mountains, and a winding dirt road on a wooden table" />
+      <img class="plate" id="plateImg" alt="Miniature diorama battlefield: flocked grass, a model pine forest, molded hills and mountains, and a winding dirt road on a wooden table" />
+      <script>document.getElementById('plateImg').src = (window.XENOFRONT_PLATES || {})[1] || '';</script>
       <svg class="layer" id="fogSvg" viewBox="0 0 1200 800" preserveAspectRatio="none" aria-hidden="true"></svg>
       <div id="propLayer"></div>
       <svg class="layer" id="ownerSvg" viewBox="0 0 1200 800" preserveAspectRatio="none" aria-hidden="true"></svg>
@@ -519,6 +531,7 @@ footer.site{color:rgba(210,235,245,.88)}
    diorama sheets (board plate + blue/red miniature sheets + property
    sheet). Nothing on the table is drawn or vector-substituted. */
 var DEVLOG = [
+ 'Plates ship as text data modules — packaging only, bytes unchanged, superseding the packaging detail in the entry below. The publish route carries UTF-8 TEXT only and rejects binary files outright, so the five plate JPGs could not follow the page as .jpg files. Each plate now ships as a small text module at assets/plates/board-1.js through board-5.js containing the plate as a base64 data URI (window.XENOFRONT_PLATES), loaded by the page in the head; the plate element and the BOARDS table consume those data URIs exactly as they consumed the data URIs baked into the single-file build. The base64 decodes BIT-IDENTICAL to the full-quality source plates — md5 board-1 c2189c9f7fb1f7d5cab5e1a363395ec4, board-2 c3604970824fa484dc06a5f5d13d3bf0, board-3 b5dba1466dd1751a04029424bf8fddee, board-4 b77c118a04de9c68ae131c7162869d65, board-5 d41bfa6029c8c03815a6167a836eb352, verified per plate after encoding. No recompression, no format change, no quality change anywhere; the binary .jpg plates remain in the repo as unreferenced source assets, like the sprite PNGs. No gameplay, visual, audio or save change.',
  'Multi-file layout, quality first — packaging only, no gameplay, visual, audio or save change. DECISION (Matthew, permanent): quality over size. Xenofront is headed toward an app, and the art is never to be recompressed or downscaled to save bytes; a plate-recompression pass that would have swapped the five board plates for smaller WebP versions was cancelled and its recompressed files deleted — the shipped plates are the full-resolution 1920×1280 originals, byte-identical to the verified batch build (checksums confirmed). LAYOUT: baking the five plates into one self-contained HTML pushed the file to about 9.97 MB, over the publish route\\u2019s per-request limit, so the plates now ship as separate relative files at stable paths — assets/plates/board-1.jpg through assets/plates/board-5.jpg, native JPEG, full quality — loaded by the page exactly as before (the plate element and the BOARDS table point at the new paths; switching boards swaps the file, nothing else). The page itself stays modest with the miniature and property sprites still embedded as data URIs, and each plate travels as its own file, comfortably pushable on its own. The game behaves identically in every respect; this pass only changes where the plate bytes live.',
  'Attack drones + airborne evasion. (1) THE DRONE STINGS: the scout drone gains a light direct-fire shot at range 1 — 25 vs infantry, 15 vs vehicles, 5 vs tanks, 10 vs air — under the fully normal unit rules: move-then-attack, tap-to-close-and-attack, counterattack by anything that can target air, kill credit and veterancy (its xp/kills flow through the same applyDamage path as every unit). It keeps fly 6, 1 HP, vision 3 and the two-aloft cap. The change is one TYPES row plus removing nothing else: canTarget, forecast, the done-by-rule test and the CPU targeting discount on drones all pick it up from the data. (2) SUPPLY: Wren carries FOUR drone launches per battle, total; launching still costs her action, a destroyed drone never refunds a launch, and at zero the Launch action disappears from the panel, from the readiness test and from the HUD line, which now reads Launches N/4. The panel label counts down (Launch Drone · 3 left). Used launches persist in the mid-battle save as a plain field on G — same key, same version; a save written before supply existed defaults to zero used, so an in-progress battle loads with a full rack. (3) AIRBORNE EVASION: any shot at a flying defender (movement type air — Battle Copter and drone today) from a ground attacker that is not anti-air grade has a 25% chance to miss entirely: no damage, no siege splash. AA grade means the Anti-Air type, any air attacker, or any attacker whose damage-versus-air is 50+ (the ruin turret at 80 qualifies; a Tank at 15 and a tower\\u2019s mech-class shot do not). The roll lives in doAttack — the single path every shot takes, player, CPU, counterattack included, so it is symmetric — and on a miss the defender is untouched and its counterattack still answers in full. DISCLOSURE: when the dodge applies to an armed forecast, the readout states the 25% miss chance plainly while the damage ghost still shows the hit if it lands; How to Play gains the evasion line and the drone paragraph is rewritten for the sting and the supply. No other stat, save-version or footer changes.',
  'Property repairs — free, Advance Wars style (the paid version was considered and declined): at the start of each side\\u2019s turn, every unit of that side standing on a property it owns — town, factory or HQ, and stations count the same way in the Belt — regains +2 HP up to its max, before any orders, and may still move and act fully. Both sides heal by the same rule at the start of their own turns. Exclusions: APC passengers and tower garrisons (both off-board, not standing on the property), drones (whole at 1 HP), a downed commander (her return rule governs), structures (towers, and the ruin turret by type), and the ruin/derelict and the relay are not repair sites. The heal lives in beginSideTurn beside the acted reset, so player and CPU turns both pass through it. Feedback is simultaneous and brief: a small green +2 riser floats off each healed unit (the kind counterpart of the damage burst, queued through the same FX layer), its segmented bar updates with the render, one soft two-note chime plays per turn however many units healed, and one battle-log line reports the count. How to Play states the rule in the Capture paragraph. No funds are touched — there is no cost, no funds check, nothing to persist beyond the HP the save already carries.',
@@ -724,7 +737,7 @@ function plateTerrain(px, py){
    the save carries it; a save without one is Board 1. */
 var GRIDCH = { '.':'plains', 'r':'road', 'f':'forest', 'h':'hills', 'm':'mountain', 'w':'water', 'b':'bridge', 'D':'dense' };
 var BOARDS = {
- 1:{ id:1, short:'Terra Table', name:'Board 1 · Terra Table', plate:'assets/plates/board-1.jpg',
+ 1:{ id:1, short:'Terra Table', name:'Board 1 · Terra Table', plate:(window.XENOFRONT_PLATES||{})[1],
      plateAlt:'Miniature diorama battlefield: flocked grass, a model pine forest, molded hills and mountains, and a winding dirt road on a wooden table',
      props:{ '1,8':'hq', '2,7':'factory', '10,8':'hq', '9,7':'factory', '6,4':'relay', '5,3':'ruin', '7,6':'city', '5,2':'city' },
      /* Introductory weighting (Board 1 only): the south town — the
@@ -742,7 +755,7 @@ var BOARDS = {
      intro:'Battle begins on the Terra table. Commander Wren leads the blue army; the red column fields no commander — extra funds and an extra recon instead.',
      introSay:'Turn 1. Wren holds the west clearings with the blue army; a commander-less red column waits in the east fog, its recons for eyes. Tap Wren to launch a drone, or tap any unit to begin.',
      mission:'Mission: take the Terra table from the commander-less red column. It fields no Wren, no aura and no drones — richer funds and an extra recon are its compensation, and its recons are its only long eyes.' },
- 2:{ id:2, short:'Twin Bays', name:'Board 2 · Twin Bays', plate:'assets/plates/board-2.jpg',
+ 2:{ id:2, short:'Twin Bays', name:'Board 2 · Twin Bays', plate:(window.XENOFRONT_PLATES||{})[2],
      plateAlt:'Miniature diorama coastline: two bright blue bays with sandy shores dividing green grassland, wooden bridges crossing each bay, model pines and hills',
      grid:['..ww..ww....','..ww...wf...','...w...w.h..','...w...w....','...bb..w....','...w..ww....','..w...ww.f..','..w....bb...','..w....ww...'],
      props:{ '1,8':'hq', '1,7':'factory', '10,8':'hq', '10,7':'factory', '2,4':'city', '5,3':'city', '5,5':'city', '9,7':'city' },
@@ -755,7 +768,7 @@ var BOARDS = {
      intro:'Battle begins at Twin Bays. Two bays cut the coast into three shores; the bridges are the only ground crossings, and the towns cluster at the bridgeheads and on the island between.',
      introSay:'Turn 1. Twin Bays: water stops every ground unit — cross at the bridges, or fly. Wren holds the west shore; the red column holds the east, with an extra recon for eyes.',
      mission:'Mission: Twin Bays. Win by capturing the red HQ or routing the red army — there is no relay on this board. Bridges are the only ground crossings; copters and drones fly the bays freely.' },
- 3:{ id:3, short:'Pinewall', name:'Board 3 · Pinewall', plate:'assets/plates/board-3.jpg',
+ 3:{ id:3, short:'Pinewall', name:'Board 3 · Pinewall', plate:(window.XENOFRONT_PLATES||{})[3],
      plateAlt:'Miniature diorama: a grey-brown mountain ridge down the centre with narrow passes, dense dark-green pine forest belts flanking it, grass clearings at the edges',
      grid:['..ff.mm.ff..','..ff.mm.ff..','.ff......ff.','..ff.mm.ff..','..ff..m.ff..','..ff.mm.ff..','.ff......ff.','..ff.mm.ff..','..ff....ff..'],
      props:{ '1,8':'hq', '2,7':'factory', '10,8':'hq', '9,7':'factory', '5,4':'ruin', '3,4':'city', '8,4':'city' },
@@ -768,7 +781,7 @@ var BOARDS = {
      intro:'Battle begins at Pinewall. A mountain spine splits the table with three passes; the Old Ruin sits in the central pass, and its turret commands the chokepoint.',
      introSay:'Turn 1. Pinewall: forest and ridge hide everything — a cat-and-mouse table. The ruin turret watches the central pass. Wren holds the west woods; red holds the east, with an extra recon.',
      mission:'Mission: Pinewall. Win by capturing the red HQ or routing the red army — there is no relay on this board. Whoever holds the ruin in the central pass aims its turret over the chokepoint.' },
- 4:{ id:4, short:'Mare Dust', name:'Board 4 · Mare Dust', plate:'assets/plates/board-4.jpg',
+ 4:{ id:4, short:'Mare Dust', name:'Board 4 · Mare Dust', plate:(window.XENOFRONT_PLATES||{})[4],
      plateAlt:'Miniature lunar diorama: grey regolith plain with clusters of round impact craters and a pale rocky highland ridge, cool and desaturated',
      grid:['..ff....f...','.fff....ff..','..f.....fff.','...f........','............','.hh....f....','..hh........','...h.....f..','.....h......'],
      props:{ '1,8':'hq', '2,7':'factory', '10,8':'hq', '10,7':'factory', '6,4':'city', '3,4':'city', '8,3':'city' },
@@ -784,7 +797,7 @@ var BOARDS = {
      intro:'Battle begins on Mare Dust, Luna. An airless grey waste of crater fields and highlands — no copters fly here; the fight belongs to tracks, treads and rockets.',
      introSay:'Turn 1. Mare Dust: crater fields hide units like forest, highlands give indirect fire its extra reach, and nothing flies in the vacuum. Wren holds the west maria; the red column holds the east.',
      mission:'Mission: Mare Dust, Luna. Win by capturing the red HQ or routing the red army — there is no relay on this board. Crater fields are this world\u2019s forest; the highlands are its hills.' },
- 5:{ id:5, short:'The Belt', name:'Board 5 · The Belt', plate:'assets/plates/board-5.jpg',
+ 5:{ id:5, short:'The Belt', name:'Board 5 · The Belt', plate:(window.XENOFRONT_PLATES||{})[5],
      plateAlt:'Miniature space diorama: a dark starfield with a faint teal and violet nebula wash and clusters of chunky grey-brown model asteroids',
      grid:['..ff..D.f...','.ff..f......','....f..ff...','..f...f...f.','....fD..f...','.f......f...','...f.f..D...','..f..f.f....','............'],
      props:{ '1,8':'hq', '2,7':'factory', '10,8':'hq', '9,7':'factory', '6,4':'ruin', '5,2':'city', '7,6':'city', '3,4':'city', '8,3':'city' },
