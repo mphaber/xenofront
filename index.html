@@ -279,6 +279,22 @@ footer.site{position:relative;text-align:center;color:rgba(240,226,196,.88);font
 .readoutwrap{background:rgba(23,32,43,.9);color:#eef5f9;border-color:rgba(110,205,240,.38);box-shadow:0 6px 28px rgba(0,0,0,.5)}
 .overlay{background:rgba(5,9,13,.74)}
 .sheet{background:rgba(23,32,43,.94);color:#eef5f9;border:1px solid rgba(110,205,240,.35)}
+/* Start-screen board picker: the five boards offered up front on
+   the intro sheet, in the same slate glass as the rest of the
+   chrome. Full-width rows, every target at least 52px tall (the
+   game's action-panel standard), board name over a short
+   terrain/world descriptor. The active board carries the same
+   primary treatment the menu's level select uses. */
+.startboards{margin-top:16px;border-top:1px solid rgba(110,205,240,.28);padding-top:12px;text-align:left}
+.startboards h3{margin:0 0 2px;font-size:1rem;color:#eef5f9}
+.startboards .note{color:#9db1c2;font-size:.86rem;margin:0}
+#startResumeBtn{width:100%;min-height:52px;margin-bottom:14px;font-size:1rem}
+.startboardlist{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.startboardlist button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-height:52px;padding:9px 14px;text-align:left;background:rgba(43,56,71,.92);border:1px solid rgba(110,205,240,.34);border-radius:10px;cursor:pointer}
+.startboardlist button b{font-size:.98rem;line-height:1.2}
+.startboardlist button span{font-size:.8rem;line-height:1.3;color:#9db1c2}
+.startboardlist button:hover{border-color:#4fdcff}
+.startboardlist button.primary span{color:#dff6fd}
 #factoryCard{background:rgba(23,32,43,.95);color:#eef5f9;border-color:rgba(110,205,240,.38)}
 footer.site{color:rgba(210,235,245,.88)}
 /* Footer legibility on narrow widths: this rule must sit AFTER the
@@ -492,6 +508,12 @@ footer.site{color:rgba(210,235,245,.88)}
     <h2>Commander Wren</h2>
     <p class="sub">One commander leads on the Terra table: Wren, enhanced infantry on foot in powered armor, a scout drone hovering at her shoulder. She is the only commander on this battlefield — the red force opposing her is a commander-less mechanized column, richer and fielding an extra recon, whose only eyes are steel. Wren's gift is seeing the table before the enemy does. Her aura reaches 2 hexes: foot units inside it capture faster and hold cover like veterans.</p>
     <div class="cmdcards" id="cmdCards" style="grid-template-columns:1fr;max-width:360px;margin:0 auto"></div>
+    <div class="startboards" id="startBoards">
+      <button type="button" class="primary hidden" id="startResumeBtn">Resume saved battle</button>
+      <h3>Choose a board</h3>
+      <p class="note">Start a fresh battle on any board; the current battle is replaced. A saved battle always resumes on its own board.</p>
+      <div class="startboardlist" id="startBoardList"></div>
+    </div>
   </div>
 </div>
 
@@ -502,7 +524,7 @@ footer.site{color:rgba(210,235,245,.88)}
     <p><b>Turn:</b> tap one of your blue miniatures, tap a softly lit hex to move, then tap a red enemy in range: the segmented health bar above it previews the hit — the segments the shot would remove glow as a red ghost on the tail of its bar, and a second bar beneath shows the counterattack it would deal back the same way. Tap it again, or tap the crosshair beside it, to strike. Indirect units (Artillery, Rockets, deployed Siege) may move and fire in the same turn. The Siege must deploy in place before it can fire its long-range splash shot, and cannot move while deployed. Or skip the walking: with one of your units selected, tap a red enemy it could reach and shoot this turn and it closes to the best firing hex on its own — cheapest move first, then the best cover — and the forecast waits there for your confirming tap; if no legal move puts the shot on, the tap just inspects the enemy, as always. When every unit has acted, End Turn lights up. A unit whose only remaining choice is the checkmark is finished on its own: once it has moved and nothing but Wait (and maybe Undo) is left to it, it settles as acted without being asked — and a tower or held ruin turret with no enemy inside its firing band no longer holds the turn open either.</p>
     <p><b>Capture:</b> park Infantry, Mech or Wren herself on a property and choose Capture. Capturing takes two turns, faster inside Wren's aura. The clock is always visible: the Capture button says how many turns are left, the status bar repeats it for whoever is capturing (yours or the enemy's), and a small pennant on the property fills as the capture advances. Towns, factories and the relay pay income each turn; factories build new units. Capturing the enemy HQ wins at once. Units standing on their own towns, factories and HQ recover 2 HP at the start of their turn — repairs are free.</p>
     <p><b>Win three ways:</b> capture the enemy HQ, rout every enemy unit, or capture the central relay and hold it for 3 of your turns — that third way belongs to the Terra table; the other boards are won by HQ capture or rout.</p>
-    <p><b>Boards:</b> five tables, chosen from the Boards list in the menu's Game section. Board 1 is the introductory Terra table, weighted a little toward Blue. Twin Bays adds water — impassable to ground units — crossed only by bridges. Pinewall is the forest-and-mountain fog table, its Old Ruin holding the central pass. Mare Dust is Luna: crater fields give forest cover and hiding, highlands stand in for hills, and neither army fields a copter in the thin air. The Belt is deep space: every unit is a ship, asteroid fields hide and cover like forest, dense clusters block movement and sight entirely, and stations — a Command Station, Docks and Habitats — replace towns, with a Precursor Derelict and its still-working turret at the centre.</p>
+    <p><b>Boards:</b> five tables, chosen from the board picker on the start screen or the Boards list in the menu's Game section. Board 1 is the introductory Terra table, weighted a little toward Blue. Twin Bays adds water — impassable to ground units — crossed only by bridges. Pinewall is the forest-and-mountain fog table, its Old Ruin holding the central pass. Mare Dust is Luna: crater fields give forest cover and hiding, highlands stand in for hills, and neither army fields a copter in the thin air. The Belt is deep space: every unit is a ship, asteroid fields hide and cover like forest, dense clusters block movement and sight entirely, and stations — a Command Station, Docks and Habitats — replace towns, with a Precursor Derelict and its still-working turret at the centre.</p>
     <p><b>Surround:</b> each of your units standing beside the target beyond the first adds about +10% damage and blunts the counterattack. When a strike is armed, each supporting unit shows a gold marker, the target's outline deepens, and the damage ghost on the target's bar turns gold while the surround bonus is boosting the shot; a target whose whole bar pulses is about to be destroyed.</p>
     <p><b>Fog:</b> unexplored table lies in shadow, and sight on this table is short: most units see only 2 hexes, medium tanks and battle copters 3, and the recon — the army's dedicated eyes — 4. Explored ground stays dim and shows no units. Forest hides a unit unless an enemy stands next to it; hills and forests block sight lines. Finding the enemy before it finds you is the game: push recons and drones forward, and expect the red column to be doing the same with its recons. Wren's drones are the exception: whatever a drone can reach with its sensors is fully revealed, forest or no forest. One mercy for flyers: a shot at a copter or drone from ordinary ground fire has a 25% chance to miss entirely — anti-air guns, other aircraft, and the ruin turret's heavy shot never miss that way, and the forecast says so when the chance applies.</p>
     <p><b>Commander Wren:</b> only the blue army fields a commander. Wren is enhanced infantry on foot: she crosses forest, hills and rough ground at foot cost, takes infantry cover and forest hiding, is targeted as infantry rather than as a vehicle, can capture, and carries commander-grade firepower — she out-guns infantry and mechs outright and edges a tank against soft targets, though heavy armor still out-shoots her. Her aura reaches 2 hexes: foot units inside it capture faster, and infantry holding forest or a property inside it gains extra cover. If she is downed, she returns at her HQ after 3 turns at full strength, and while she is down no new drones can launch. She is built to grow with the campaign to come: each completed level will raise her maximum health by 2, up to 20 — in this battle she fights at 10, like everyone else. The red column has no commander, no aura and no drones — it compensates with extra funds and an extra recon.</p>
@@ -531,6 +553,7 @@ footer.site{color:rgba(210,235,245,.88)}
    diorama sheets (board plate + blue/red miniature sheets + property
    sheet). Nothing on the table is drawn or vector-substituted. */
 var DEVLOG = [
+ 'Board picker on the start screen — a second entry point to the level select, requested so the board choice is up front instead of only in the menu. The intro sheet gains a Choose a Board section under the Wren card: one full-width slate-glass button per board, each at least 52px tall (the action-panel target standard), showing the same name the menu\u2019s Boards list uses plus a short terrain/world descriptor carried on the board definition (Terra Table introductory; Twin Bays coastal, bridges only; Pinewall forest-and-mountain with the ruin in the central pass; Mare Dust Luna, craters and highlands, no air; the Belt deep space, stations and the Derelict). Picking a board calls startBoard — the menu flow itself, not a copy — so the save handling is identical by construction: the saved battle is replaced, the new battle starts fresh, and the plate swaps to the chosen board as the battle begins via applyBoard. The menu\u2019s Boards list is untouched and still works exactly as before. RESUME: when a mid-battle save exists, the start sheet now also offers Resume saved battle, labeled with the saved battle\u2019s own board and turn read from the save (a read-only peek; loading still goes through loadGame untouched, so a saved battle always resumes on its own board), wired to the same resume flow as the menu\u2019s Resume button, which also remains. The Wren card and its Take the table quick-start are unchanged, as are the byte-exact footer (still visible at the bottom of the start screen), every gameplay rule and stat, the save key and format, and the plate modules — packaging unchanged, index.html only.',
  'Plates ship as text data modules — packaging only, bytes unchanged, superseding the packaging detail in the entry below. The publish route carries UTF-8 TEXT only and rejects binary files outright, so the five plate JPGs could not follow the page as .jpg files. Each plate now ships as a small text module at assets/plates/board-1.js through board-5.js containing the plate as a base64 data URI (window.XENOFRONT_PLATES), loaded by the page in the head; the plate element and the BOARDS table consume those data URIs exactly as they consumed the data URIs baked into the single-file build. The base64 decodes BIT-IDENTICAL to the full-quality source plates — md5 board-1 c2189c9f7fb1f7d5cab5e1a363395ec4, board-2 c3604970824fa484dc06a5f5d13d3bf0, board-3 b5dba1466dd1751a04029424bf8fddee, board-4 b77c118a04de9c68ae131c7162869d65, board-5 d41bfa6029c8c03815a6167a836eb352, verified per plate after encoding. No recompression, no format change, no quality change anywhere; the binary .jpg plates remain in the repo as unreferenced source assets, like the sprite PNGs. No gameplay, visual, audio or save change.',
  'Multi-file layout, quality first — packaging only, no gameplay, visual, audio or save change. DECISION (Matthew, permanent): quality over size. Xenofront is headed toward an app, and the art is never to be recompressed or downscaled to save bytes; a plate-recompression pass that would have swapped the five board plates for smaller WebP versions was cancelled and its recompressed files deleted — the shipped plates are the full-resolution 1920×1280 originals, byte-identical to the verified batch build (checksums confirmed). LAYOUT: baking the five plates into one self-contained HTML pushed the file to about 9.97 MB, over the publish route\\u2019s per-request limit, so the plates now ship as separate relative files at stable paths — assets/plates/board-1.jpg through assets/plates/board-5.jpg, native JPEG, full quality — loaded by the page exactly as before (the plate element and the BOARDS table point at the new paths; switching boards swaps the file, nothing else). The page itself stays modest with the miniature and property sprites still embedded as data URIs, and each plate travels as its own file, comfortably pushable on its own. The game behaves identically in every respect; this pass only changes where the plate bytes live.',
  'Attack drones + airborne evasion. (1) THE DRONE STINGS: the scout drone gains a light direct-fire shot at range 1 — 25 vs infantry, 15 vs vehicles, 5 vs tanks, 10 vs air — under the fully normal unit rules: move-then-attack, tap-to-close-and-attack, counterattack by anything that can target air, kill credit and veterancy (its xp/kills flow through the same applyDamage path as every unit). It keeps fly 6, 1 HP, vision 3 and the two-aloft cap. The change is one TYPES row plus removing nothing else: canTarget, forecast, the done-by-rule test and the CPU targeting discount on drones all pick it up from the data. (2) SUPPLY: Wren carries FOUR drone launches per battle, total; launching still costs her action, a destroyed drone never refunds a launch, and at zero the Launch action disappears from the panel, from the readiness test and from the HUD line, which now reads Launches N/4. The panel label counts down (Launch Drone · 3 left). Used launches persist in the mid-battle save as a plain field on G — same key, same version; a save written before supply existed defaults to zero used, so an in-progress battle loads with a full rack. (3) AIRBORNE EVASION: any shot at a flying defender (movement type air — Battle Copter and drone today) from a ground attacker that is not anti-air grade has a 25% chance to miss entirely: no damage, no siege splash. AA grade means the Anti-Air type, any air attacker, or any attacker whose damage-versus-air is 50+ (the ruin turret at 80 qualifies; a Tank at 15 and a tower\\u2019s mech-class shot do not). The roll lives in doAttack — the single path every shot takes, player, CPU, counterattack included, so it is symmetric — and on a miss the defender is untouched and its counterattack still answers in full. DISCLOSURE: when the dodge applies to an armed forecast, the readout states the 25% miss chance plainly while the damage ghost still shows the hit if it lands; How to Play gains the evasion line and the drone paragraph is rewritten for the sting and the supply. No other stat, save-version or footer changes.',
@@ -737,7 +760,7 @@ function plateTerrain(px, py){
    the save carries it; a save without one is Board 1. */
 var GRIDCH = { '.':'plains', 'r':'road', 'f':'forest', 'h':'hills', 'm':'mountain', 'w':'water', 'b':'bridge', 'D':'dense' };
 var BOARDS = {
- 1:{ id:1, short:'Terra Table', name:'Board 1 · Terra Table', plate:(window.XENOFRONT_PLATES||{})[1],
+ 1:{ id:1, short:'Terra Table', name:'Board 1 · Terra Table', desc:'The introductory Terra table — grass, forest and hills, weighted a little toward Blue.', plate:(window.XENOFRONT_PLATES||{})[1],
      plateAlt:'Miniature diorama battlefield: flocked grass, a model pine forest, molded hills and mountains, and a winding dirt road on a wooden table',
      props:{ '1,8':'hq', '2,7':'factory', '10,8':'hq', '9,7':'factory', '6,4':'relay', '5,3':'ruin', '7,6':'city', '5,2':'city' },
      /* Introductory weighting (Board 1 only): the south town — the
@@ -755,7 +778,7 @@ var BOARDS = {
      intro:'Battle begins on the Terra table. Commander Wren leads the blue army; the red column fields no commander — extra funds and an extra recon instead.',
      introSay:'Turn 1. Wren holds the west clearings with the blue army; a commander-less red column waits in the east fog, its recons for eyes. Tap Wren to launch a drone, or tap any unit to begin.',
      mission:'Mission: take the Terra table from the commander-less red column. It fields no Wren, no aura and no drones — richer funds and an extra recon are its compensation, and its recons are its only long eyes.' },
- 2:{ id:2, short:'Twin Bays', name:'Board 2 · Twin Bays', plate:(window.XENOFRONT_PLATES||{})[2],
+ 2:{ id:2, short:'Twin Bays', name:'Board 2 · Twin Bays', desc:'Coastal Terra — two bays crossed only by bridges; towns at the bridgeheads and on the island between.', plate:(window.XENOFRONT_PLATES||{})[2],
      plateAlt:'Miniature diorama coastline: two bright blue bays with sandy shores dividing green grassland, wooden bridges crossing each bay, model pines and hills',
      grid:['..ww..ww....','..ww...wf...','...w...w.h..','...w...w....','...bb..w....','...w..ww....','..w...ww.f..','..w....bb...','..w....ww...'],
      props:{ '1,8':'hq', '1,7':'factory', '10,8':'hq', '10,7':'factory', '2,4':'city', '5,3':'city', '5,5':'city', '9,7':'city' },
@@ -768,7 +791,7 @@ var BOARDS = {
      intro:'Battle begins at Twin Bays. Two bays cut the coast into three shores; the bridges are the only ground crossings, and the towns cluster at the bridgeheads and on the island between.',
      introSay:'Turn 1. Twin Bays: water stops every ground unit — cross at the bridges, or fly. Wren holds the west shore; the red column holds the east, with an extra recon for eyes.',
      mission:'Mission: Twin Bays. Win by capturing the red HQ or routing the red army — there is no relay on this board. Bridges are the only ground crossings; copters and drones fly the bays freely.' },
- 3:{ id:3, short:'Pinewall', name:'Board 3 · Pinewall', plate:(window.XENOFRONT_PLATES||{})[3],
+ 3:{ id:3, short:'Pinewall', name:'Board 3 · Pinewall', desc:'Forest and mountain — a spine with narrow passes, and the Old Ruin holding the central pass.', plate:(window.XENOFRONT_PLATES||{})[3],
      plateAlt:'Miniature diorama: a grey-brown mountain ridge down the centre with narrow passes, dense dark-green pine forest belts flanking it, grass clearings at the edges',
      grid:['..ff.mm.ff..','..ff.mm.ff..','.ff......ff.','..ff.mm.ff..','..ff..m.ff..','..ff.mm.ff..','.ff......ff.','..ff.mm.ff..','..ff....ff..'],
      props:{ '1,8':'hq', '2,7':'factory', '10,8':'hq', '9,7':'factory', '5,4':'ruin', '3,4':'city', '8,4':'city' },
@@ -781,7 +804,7 @@ var BOARDS = {
      intro:'Battle begins at Pinewall. A mountain spine splits the table with three passes; the Old Ruin sits in the central pass, and its turret commands the chokepoint.',
      introSay:'Turn 1. Pinewall: forest and ridge hide everything — a cat-and-mouse table. The ruin turret watches the central pass. Wren holds the west woods; red holds the east, with an extra recon.',
      mission:'Mission: Pinewall. Win by capturing the red HQ or routing the red army — there is no relay on this board. Whoever holds the ruin in the central pass aims its turret over the chokepoint.' },
- 4:{ id:4, short:'Mare Dust', name:'Board 4 · Mare Dust', plate:(window.XENOFRONT_PLATES||{})[4],
+ 4:{ id:4, short:'Mare Dust', name:'Board 4 · Mare Dust', desc:'Luna — crater fields hide like forest, highlands stand in for hills, and nothing flies in the thin air.', plate:(window.XENOFRONT_PLATES||{})[4],
      plateAlt:'Miniature lunar diorama: grey regolith plain with clusters of round impact craters and a pale rocky highland ridge, cool and desaturated',
      grid:['..ff....f...','.fff....ff..','..f.....fff.','...f........','............','.hh....f....','..hh........','...h.....f..','.....h......'],
      props:{ '1,8':'hq', '2,7':'factory', '10,8':'hq', '10,7':'factory', '6,4':'city', '3,4':'city', '8,3':'city' },
@@ -797,7 +820,7 @@ var BOARDS = {
      intro:'Battle begins on Mare Dust, Luna. An airless grey waste of crater fields and highlands — no copters fly here; the fight belongs to tracks, treads and rockets.',
      introSay:'Turn 1. Mare Dust: crater fields hide units like forest, highlands give indirect fire its extra reach, and nothing flies in the vacuum. Wren holds the west maria; the red column holds the east.',
      mission:'Mission: Mare Dust, Luna. Win by capturing the red HQ or routing the red army — there is no relay on this board. Crater fields are this world\u2019s forest; the highlands are its hills.' },
- 5:{ id:5, short:'The Belt', name:'Board 5 · The Belt', plate:(window.XENOFRONT_PLATES||{})[5],
+ 5:{ id:5, short:'The Belt', name:'Board 5 · The Belt', desc:'Deep space — ship fleets among the asteroids; stations replace towns, and a Precursor Derelict holds the centre.', plate:(window.XENOFRONT_PLATES||{})[5],
      plateAlt:'Miniature space diorama: a dark starfield with a faint teal and violet nebula wash and clusters of chunky grey-brown model asteroids',
      grid:['..ff..D.f...','.ff..f......','....f..ff...','..f...f...f.','....fD..f...','.f......f...','...f.f..D...','..f..f.f....','............'],
      props:{ '1,8':'hq', '2,7':'factory', '10,8':'hq', '9,7':'factory', '6,4':'ruin', '5,2':'city', '7,6':'city', '3,4':'city', '8,3':'city' },
@@ -3768,6 +3791,48 @@ function startBoard(id){
   say(BOARDS[id].introSay);
   audioInit(); sfx('capture');
 }
+/* Start-screen board picker: the same five boards as the menu's
+   level select, offered up front on the intro sheet. Picking one
+   runs startBoard — the menu flow itself — so a fresh board
+   replaces the current battle under exactly the menu's save
+   handling, and the plate swaps to the chosen board as the battle
+   begins (applyBoard, inside newGame). When a mid-battle save
+   exists, the sheet also offers Resume, wired to the same loadGame
+   path as the menu's Resume button; the peek below only reads the
+   save's board and turn for the button label and never loads it. */
+function peekSave(){
+  try {
+    var raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    var s = JSON.parse(raw);
+    if (!s) return null;
+    return { board: BOARDS[s.board] ? s.board : 1, turn: s.turn || null };
+  } catch (e) { return null; }
+}
+function refreshStartBoards(){
+  var list = document.getElementById('startBoardList');
+  if (!list) return;
+  var active = G && G.board ? G.board : curBoardId;
+  var html = '';
+  for (var id = 1; id <= 5; id++) html += '<button type="button" data-board="' + id + '"' + (id === active ? ' class="primary"' : '') + '><b>' + BOARDS[id].name + '</b><span>' + BOARDS[id].desc + '</span></button>';
+  list.innerHTML = html;
+  var btns = list.querySelectorAll('button[data-board]');
+  for (var i = 0; i < btns.length; i++) btns[i].addEventListener('click', function(ev){ startBoard(+ev.currentTarget.getAttribute('data-board')); });
+  var rb = document.getElementById('startResumeBtn');
+  if (rb){
+    var sv = peekSave();
+    if (sv){
+      rb.textContent = 'Resume saved battle — ' + BOARDS[sv.board].name + (sv.turn ? ' · Turn ' + sv.turn : '');
+      rb.classList.remove('hidden');
+      rb.onclick = function(){
+        if (loadGame()){ closeMenu(); render(); refreshBoardPick(); say('Battle resumed at turn ' + G.turn + ' on ' + boardDef().name + '. Tap a unit, or tap any hex to inspect it.'); }
+      };
+    } else {
+      rb.classList.add('hidden');
+      rb.onclick = null;
+    }
+  }
+}
 function startIntro(){
   var cards = document.getElementById('cmdCards');
   cards.innerHTML = '<div class="cmdcard"><img src="' + SPRITES[WREN.img] + '" alt="Commander Wren miniature, a woman in powered armor with a scout drone at her shoulder" style="height:120px">' +
@@ -3784,6 +3849,7 @@ function startIntro(){
     showBanner('Turn 1 — Blue to move');
     audioInit(); sfx('capture');
   });
+  refreshStartBoards();
   document.getElementById('cmdOverlay').classList.remove('hidden');
 }
 function init(){
