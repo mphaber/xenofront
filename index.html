@@ -472,7 +472,7 @@ footer.site{color:rgba(210,235,245,.88)}
       </section>
       <section data-mpanel="settings" class="hidden soundpop">
         <h3>Settings</h3>
-        <p>Original procedural synth score for the Terra table, with menu, battle and tense moods. Sound mixes with other apps; volume choices are kept on this device.</p>
+        <p>Original procedural synth score: one minimal motif, with a variation for each board — the Terra Table theme on the start screen, and Twin Bays, Pinewall, Mare Dust and the Belt each revoicing it as their battle begins. Menu, battle and tense moods throughout. Sound mixes with other apps; volume choices are kept on this device.</p>
         <label>Master <input type="range" id="volMaster" min="0" max="100" /></label>
         <label>Music <input type="range" id="volMusic" min="0" max="100" /></label>
         <label>Sound Effects <input type="range" id="volSfx" min="0" max="100" /></label>
@@ -553,6 +553,7 @@ footer.site{color:rgba(210,235,245,.88)}
    diorama sheets (board plate + blue/red miniature sheets + property
    sheet). Nothing on the table is drawn or vector-substituted. */
 var DEVLOG = [
+ 'Per-board music: one score, five places. Board 1 keeps its existing track EXACTLY as it was — the sequencer still schedules it through the original code path, note for note and parameter for parameter (same SCALE, same BASSLINE, same step clock 0.46/0.27/0.21, same gains and waveforms), and its entry in the new TRACKS table merely documents those parameters. Boards 2-5 gain true variations on the same motif DNA — the same scale, the same bass motif anchors, the same pad roots [0,3,5,1] and lead phrase [5,4,3,4] — revoiced, re-spaced and re-paced, all minimal and thought-provoking per the brief: sparse arrangements, slow harmonic movement, generous silence, soft tones, nothing busy and nothing that competes with the battle SFX. Twin Bays is the lightest: a slower clock (x1.15), sine bass with the motif anchors opened out, wide pad voicings (x2/x4/x5) swelling in slowly, and the lead thinned to a soft sine every eight steps. Pinewall is sparser and lower: clock x1.35, the bass dropped an octave and thinned to three anchors per cycle, low pad voicings, and a single low lead note per cycle. Mare Dust is colder and thinner: clock x1.5, the motif slightly fractured (an off-beat repeat of the root), only two thin pad tones, a triangle lead two octaves up at low gain, and a faint high shimmer (root x8) above long silences. The Belt is the most minimal: clock x1.8, deep sub pulses on two anchors per cycle, two distant pad tones with the slowest swells, and the lead present but far away, answered by two decaying echoes. WIRING: the music follows the active board — the start screen plays Board 1, and starting, resuming or switching a battle crossfades over 1.5 seconds with no hard cut, via two track buses feeding the existing music bus (the old track rings out on its bus as it ramps down while the new track fades in on the other). Still fully synthesized live with WebAudio — no audio files. The Master/Music/SFX sliders and their persistence, the guarded ambient audio session and the unlock/resume hardening are untouched; slider changes still drive the music bus gain the tracks feed. Verified with a stub-AudioContext harness: each board activates its own distinct track definition, the five definitions differ in their arrangement parameters, Board 1 matches the pre-pass parameters exactly, a board switch ramps both buses and lands on the new track, a resumed Board 4 save starts the Luna variation, and the music bus still answers the sliders, with zero console errors. As with all audio in this project, the musical feel itself can only be judged on a real device.',
  'Board picker on the start screen — a second entry point to the level select, requested so the board choice is up front instead of only in the menu. The intro sheet gains a Choose a Board section under the Wren card: one full-width slate-glass button per board, each at least 52px tall (the action-panel target standard), showing the same name the menu\u2019s Boards list uses plus a short terrain/world descriptor carried on the board definition (Terra Table introductory; Twin Bays coastal, bridges only; Pinewall forest-and-mountain with the ruin in the central pass; Mare Dust Luna, craters and highlands, no air; the Belt deep space, stations and the Derelict). Picking a board calls startBoard — the menu flow itself, not a copy — so the save handling is identical by construction: the saved battle is replaced, the new battle starts fresh, and the plate swaps to the chosen board as the battle begins via applyBoard. The menu\u2019s Boards list is untouched and still works exactly as before. RESUME: when a mid-battle save exists, the start sheet now also offers Resume saved battle, labeled with the saved battle\u2019s own board and turn read from the save (a read-only peek; loading still goes through loadGame untouched, so a saved battle always resumes on its own board), wired to the same resume flow as the menu\u2019s Resume button, which also remains. The Wren card and its Take the table quick-start are unchanged, as are the byte-exact footer (still visible at the bottom of the start screen), every gameplay rule and stat, the save key and format, and the plate modules — packaging unchanged, index.html only.',
  'Plates ship as text data modules — packaging only, bytes unchanged, superseding the packaging detail in the entry below. The publish route carries UTF-8 TEXT only and rejects binary files outright, so the five plate JPGs could not follow the page as .jpg files. Each plate now ships as a small text module at assets/plates/board-1.js through board-5.js containing the plate as a base64 data URI (window.XENOFRONT_PLATES), loaded by the page in the head; the plate element and the BOARDS table consume those data URIs exactly as they consumed the data URIs baked into the single-file build. The base64 decodes BIT-IDENTICAL to the full-quality source plates — md5 board-1 c2189c9f7fb1f7d5cab5e1a363395ec4, board-2 c3604970824fa484dc06a5f5d13d3bf0, board-3 b5dba1466dd1751a04029424bf8fddee, board-4 b77c118a04de9c68ae131c7162869d65, board-5 d41bfa6029c8c03815a6167a836eb352, verified per plate after encoding. No recompression, no format change, no quality change anywhere; the binary .jpg plates remain in the repo as unreferenced source assets, like the sprite PNGs. No gameplay, visual, audio or save change.',
  'Multi-file layout, quality first — packaging only, no gameplay, visual, audio or save change. DECISION (Matthew, permanent): quality over size. Xenofront is headed toward an app, and the art is never to be recompressed or downscaled to save bytes; a plate-recompression pass that would have swapped the five board plates for smaller WebP versions was cancelled and its recompressed files deleted — the shipped plates are the full-resolution 1920×1280 originals, byte-identical to the verified batch build (checksums confirmed). LAYOUT: baking the five plates into one self-contained HTML pushed the file to about 9.97 MB, over the publish route\\u2019s per-request limit, so the plates now ship as separate relative files at stable paths — assets/plates/board-1.jpg through assets/plates/board-5.jpg, native JPEG, full quality — loaded by the page exactly as before (the plate element and the BOARDS table point at the new paths; switching boards swaps the file, nothing else). The page itself stays modest with the miniature and property sprites still embedded as data URIs, and each plate travels as its own file, comfortably pushable on its own. The game behaves identically in every respect; this pass only changes where the plate bytes live.',
@@ -3146,6 +3147,7 @@ function loadGame(){
 var AU = { ctx: null, master: null, musicBus: null, sfxBus: null, sfxComp: null, seqTimer: null, step: 0, nextTime: 0,
   noiseBuf: null, gritCurve: null, shots: {}, travels: {}, lastTravel: null, lastWeapon: null,
   nodes: 0, kills: {}, lastKill: null, lastKillNodes: 0,
+  trackId: 1, busA: null, busB: null, curBus: null, altBus: null,
   vol: { master: 0.8, music: 0.6, sfx: 0.8 } };
 try {
   var savedVol = JSON.parse(localStorage.getItem('xenofront-diorama-audio-v1') || 'null');
@@ -3162,6 +3164,15 @@ function audioInit(){
   AU.ctx = new AC();
   AU.master = AU.ctx.createGain(); AU.master.gain.value = AU.vol.master; AU.master.connect(AU.ctx.destination);
   AU.musicBus = AU.ctx.createGain(); AU.musicBus.gain.value = AU.vol.music; AU.musicBus.connect(AU.master);
+  /* Per-board crossfade: two track buses feed the music bus. The
+     active track schedules onto curBus; a board switch swaps the
+     buses and ramps their gains over 1.5s, so long pad tones from
+     the old board ring out under the new board's first notes — no
+     hard cuts. The Music slider still drives musicBus itself,
+     exactly as before; the buses sit downstream of nothing it owns. */
+  AU.busA = AU.ctx.createGain(); AU.busA.gain.value = 1; AU.busA.connect(AU.musicBus);
+  AU.busB = AU.ctx.createGain(); AU.busB.gain.value = 0; AU.busB.connect(AU.musicBus);
+  AU.curBus = AU.busA; AU.altBus = AU.busB;
   AU.sfxBus = AU.ctx.createGain(); AU.sfxBus.gain.value = AU.vol.sfx;
   /* Soft limiter on the SFX bus: layered weapon peaks and CPU
      volleys squash instead of clipping. The SFX slider still sets
@@ -3188,33 +3199,114 @@ function musicMood(){
 }
 var SCALE = [146.83, 174.61, 196.00, 220.00, 261.63, 293.66, 349.23]; // D minor-ish
 var BASSLINE = [0, -1, 0, -1, 3, -1, 0, -1, 0, -1, 0, -1, 4, -1, 3, -1];
-function tone(freq, t, dur, type, gain, dest){
+function tone(freq, t, dur, type, gain, dest, attack){
   if (!AU.ctx) return;
   var o = AU.ctx.createOscillator(), g = AU.ctx.createGain();
   o.type = type; o.frequency.value = freq;
   g.gain.setValueAtTime(0, t);
-  g.gain.linearRampToValueAtTime(gain, t + 0.02);
+  g.gain.linearRampToValueAtTime(gain, t + (attack || 0.02));
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(g); g.connect(dest || AU.musicBus);
+  o.connect(g); g.connect(dest || AU.curBus || AU.musicBus);
   o.start(t); o.stop(t + dur + 0.05);
+}
+/* ---------------- Per-board score: one motif, five places ----------------
+   Board 1 is the reference track and is scheduled by the ORIGINAL
+   code path below, note for note and parameter for parameter; its
+   TRACKS entry simply documents those parameters. Boards 2–5 are
+   true variations on the same DNA — the same SCALE, the same bass
+   motif anchors (0 … 3 … 0 … 4, 3), the same pad roots [0,3,5,1]
+   and the same lead phrase [5,4,3,4] — revoiced, re-spaced and
+   re-paced per board, all minimal and thought-provoking: sparse
+   arrangements, slow harmonic movement, generous silence, soft
+   tones, nothing that competes with the battle SFX. All five loop
+   on the same 16-step / 4-bar cycle, so each loops seamlessly. */
+var TRACKS = {
+ 1:{ id:1, name:'Terra Table', spbMul:1, bassPat:null /* BASSLINE itself */, bassDiv:2, bassWave:'triangle', bassGainMenu:0.10, bassGain:0.16, bassDur:1.6,
+     padRoots:[0,3,5,1], padMults:[2,3,4], padGains:[0.05,0.032,0.02], padDur:14, attack:0.02,
+     leadNotes:[5,4,3,4], leadEvery:4, leadOff:2, leadMul:2, leadWave:'square', leadGain:0.022, leadDur:1.2, echo:null, shimmer:null,
+     pingBase:1100, pingStep:60, pingEvery:2, pingGain:0.012 },
+ 2:{ id:2, name:'Twin Bays', spbMul:1.15, bassPat:[0,-1,-1,-1, 3,-1,-1,-1, 0,-1,-1,-1, 4,-1,3,-1], bassDiv:2, bassWave:'sine', bassGainMenu:0.08, bassGain:0.12, bassDur:2.2,
+     padRoots:[0,3,5,1], padMults:[2,4,5], padGains:[0.040,0.018,0.012], padDur:18, attack:0.4,
+     leadNotes:[5,4,3,4], leadEvery:8, leadOff:6, leadMul:2, leadWave:'sine', leadGain:0.016, leadDur:2.4, echo:null, shimmer:null,
+     pingBase:880, pingStep:40, pingEvery:4, pingGain:0.006 },
+ 3:{ id:3, name:'Pinewall', spbMul:1.35, bassPat:[0,-1,-1,-1, -1,-1,-1,-1, 3,-1,-1,-1, 4,-1,-1,-1], bassDiv:4, bassWave:'triangle', bassGainMenu:0.07, bassGain:0.10, bassDur:2.0,
+     padRoots:[0,3,5,1], padMults:[1,2,3], padGains:[0.040,0.025,0.014], padDur:20, attack:0.3,
+     leadNotes:[5,4,3,4], leadEvery:16, leadOff:10, leadMul:1, leadWave:'sine', leadGain:0.014, leadDur:3.0, echo:null, shimmer:null,
+     pingBase:760, pingStep:30, pingEvery:4, pingGain:0.005 },
+ 4:{ id:4, name:'Mare Dust', spbMul:1.5, bassPat:[0,-1,-1,0, -1,-1,-1,-1, 3,-1,-1,-1, -1,4,-1,-1], bassDiv:2, bassWave:'sine', bassGainMenu:0.06, bassGain:0.09, bassDur:1.8,
+     padRoots:[0,3,5,1], padMults:[2,4], padGains:[0.030,0.012], padDur:16, attack:0.25,
+     leadNotes:[5,4,3,4], leadEvery:8, leadOff:4, leadMul:4, leadWave:'triangle', leadGain:0.010, leadDur:1.8, echo:null,
+     shimmer:{ mult:8, gain:0.006, dur:10 },
+     pingBase:1240, pingStep:50, pingEvery:4, pingGain:0.004 },
+ 5:{ id:5, name:'The Belt', spbMul:1.8, bassPat:[0,-1,-1,-1, -1,-1,-1,-1, 3,-1,-1,-1, -1,-1,-1,-1], bassDiv:4, bassWave:'sine', bassGainMenu:0.11, bassGain:0.14, bassDur:3.0,
+     padRoots:[0,3,5,1], padMults:[2,3], padGains:[0.028,0.016], padDur:24, attack:0.6,
+     leadNotes:[5,4,3,4], leadEvery:16, leadOff:8, leadMul:2, leadWave:'sine', leadGain:0.012, leadDur:4.0,
+     echo:[{ steps:4, gain:0.45 }, { steps:8, gain:0.20 }], shimmer:null,
+     pingBase:660, pingStep:20, pingEvery:8, pingGain:0.004 }
+};
+function musicSetTrack(id){
+  if (!TRACKS[id]) id = 1;
+  if (id === AU.trackId) return;
+  AU.trackId = id;
+  if (!AU.ctx || !AU.busA || !AU.curBus) return;
+  /* True crossfade over 1.5s: the old track's sounding notes keep
+     playing on the old bus as it ramps down, while the new track's
+     notes schedule onto the new bus as it ramps up. */
+  var now = AU.ctx.currentTime;
+  var oldBus = AU.curBus, newBus = AU.altBus;
+  oldBus.gain.cancelScheduledValues(now);
+  oldBus.gain.setValueAtTime(oldBus.gain.value, now);
+  oldBus.gain.linearRampToValueAtTime(0.0001, now + 1.5);
+  newBus.gain.cancelScheduledValues(now);
+  newBus.gain.setValueAtTime(newBus.gain.value, now);
+  newBus.gain.linearRampToValueAtTime(1, now + 1.5);
+  AU.curBus = newBus; AU.altBus = oldBus;
 }
 function musicTick(){
   if (!AU.ctx) return;
   audioResume();
-  var mood = G && G.started && !G.over ? musicMood() : 'menu';
-  var spb = mood === 'menu' ? 0.46 : mood === 'tense' ? 0.21 : 0.27; // seconds per step
+  /* The music follows the active board: the start screen (and any
+     moment no battle is live) plays Board 1's theme; a started
+     battle plays its own board's variation. Starting, resuming or
+     switching boards therefore crossfades via musicSetTrack. */
+  var inBattle = !!(G && G.started && !G.over);
+  var want = inBattle ? (TRACKS[G.board || curBoardId] ? (G.board || curBoardId) : 1) : 1;
+  if (want !== AU.trackId) musicSetTrack(want);
+  var tr = TRACKS[AU.trackId] || TRACKS[1];
+  var mood = inBattle ? musicMood() : 'menu';
+  var spb = (mood === 'menu' ? 0.46 : mood === 'tense' ? 0.21 : 0.27) * tr.spbMul; // seconds per step
   while (AU.nextTime < AU.ctx.currentTime + 0.25){
     var t = AU.nextTime, s = AU.step % 16, bar = Math.floor(AU.step / 16) % 4;
-    var bass = BASSLINE[s];
-    if (bass >= 0) tone(SCALE[bass] / 2, t, spb * 1.6, 'triangle', mood === 'menu' ? 0.10 : 0.16);
-    if (s === 0){
-      var root = SCALE[[0, 3, 5, 1][bar]] / 2;
-      tone(root * 2, t, spb * 14, 'sine', 0.05);
-      tone(root * 3, t, spb * 14, 'sine', 0.032);
-      tone(root * 4, t, spb * 14, 'sine', 0.02);
+    if (AU.trackId === 1){
+      /* Board 1 — the original track, unchanged. */
+      var bass = BASSLINE[s];
+      if (bass >= 0) tone(SCALE[bass] / 2, t, spb * 1.6, 'triangle', mood === 'menu' ? 0.10 : 0.16);
+      if (s === 0){
+        var root = SCALE[[0, 3, 5, 1][bar]] / 2;
+        tone(root * 2, t, spb * 14, 'sine', 0.05);
+        tone(root * 3, t, spb * 14, 'sine', 0.032);
+        tone(root * 4, t, spb * 14, 'sine', 0.02);
+      }
+      if (mood !== 'menu' && s % 4 === 2) tone(SCALE[[5, 4, 3, 4][bar]] * 2, t, spb * 1.2, 'square', 0.022);
+      if (mood === 'tense' && s % 2 === 0) tone(1100 + (s % 4) * 60, t, 0.05, 'sine', 0.012);
+    } else {
+      /* Boards 2–5 — variations on the same motif DNA, driven by
+         the board's TRACKS entry: sparser bass patterns, revoiced
+         pads, a slower step clock and softer attacks. */
+      var vb = tr.bassPat[s];
+      if (vb >= 0) tone(SCALE[vb] / tr.bassDiv, t, spb * tr.bassDur, tr.bassWave, mood === 'menu' ? tr.bassGainMenu : tr.bassGain, null, tr.attack);
+      if (s === 0){
+        var vroot = SCALE[tr.padRoots[bar]] / 2;
+        for (var pi = 0; pi < tr.padMults.length; pi++) tone(vroot * tr.padMults[pi], t, spb * tr.padDur, 'sine', tr.padGains[pi], null, tr.attack);
+        if (tr.shimmer) tone(vroot * tr.shimmer.mult, t, spb * tr.shimmer.dur, 'sine', tr.shimmer.gain, null, tr.attack);
+      }
+      if (mood !== 'menu' && s % tr.leadEvery === tr.leadOff){
+        var lf = SCALE[tr.leadNotes[bar]] * tr.leadMul;
+        tone(lf, t, spb * tr.leadDur, tr.leadWave, tr.leadGain, null, tr.attack);
+        if (tr.echo) for (var ei = 0; ei < tr.echo.length; ei++) tone(lf, t + spb * tr.echo[ei].steps, spb * tr.leadDur, tr.leadWave, tr.leadGain * tr.echo[ei].gain, null, tr.attack);
+      }
+      if (mood === 'tense' && tr.pingGain && s % tr.pingEvery === 0) tone(tr.pingBase + (s % 4) * tr.pingStep, t, 0.05, 'sine', tr.pingGain, null, tr.attack);
     }
-    if (mood !== 'menu' && s % 4 === 2) tone(SCALE[[5, 4, 3, 4][bar]] * 2, t, spb * 1.2, 'square', 0.022);
-    if (mood === 'tense' && s % 2 === 0) tone(1100 + (s % 4) * 60, t, 0.05, 'sine', 0.012);
     AU.nextTime += spb;
     AU.step++;
   }
