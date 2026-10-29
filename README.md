@@ -4,4 +4,4 @@ A turn-based war strategy game of tabletop miniatures, fog of war, scout drones,
 
 Play: https://mphaber.github.io/xenofront/
 
-Created by Matthew Haber / © 2026 Matthew Haber. All rights reserved.
+Created by Matthew Haber / © 2026 Real Sparks. All rights reserved.
